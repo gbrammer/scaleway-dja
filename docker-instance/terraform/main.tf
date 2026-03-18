@@ -25,15 +25,14 @@ resource "scaleway_instance_server" "docker_instance" {
   ip_id = scaleway_instance_ip.public_ip.id
   
   root_volume {
-    volume_type = "sbs_volume"
-    volume_id   = scaleway_block_volume.volume.id
     delete_on_termination = true
   }
-  
+
+  additional_volume_ids = [scaleway_block_volume.volume.id]
 }
 
 # Print public IP
 output public_ip {
-    value = docker_instance.public_ips
-    sensitive = true
+    value = scaleway_instance_server.docker_instance.public_ips
+    sensitive = false
 }

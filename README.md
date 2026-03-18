@@ -6,6 +6,12 @@ Scaleway resources for the DJA
 $ echo "export SCWREPO=${PWD}" >> ~/.bashrc
 ```
 
+## Generate API keys
+https://console.scaleway.com/iam/users
+
+## Add SSH key
+https://console.scaleway.com/project/ssh-keys
+
 ## Install the Scaleway CLI
 
 ```bash
@@ -22,3 +28,5 @@ https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 $ brew tap hashicorp/tap
 $ brew install hashicorp/tap/terraform
 ```
+
+## 

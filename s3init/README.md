@@ -19,7 +19,7 @@ s3api =
   endpoint_url = https://s3.fr-par.scw.cloud
 ```
 
-Add a BASH alias to the `awscli --profile`:
+Add a BASH alias to the `awscli --profile` (in `~/.bashrc`):
 
 ```bash
 $ alias saws="aws --profile $PROFILE"
