@@ -29,6 +29,12 @@ resource "scaleway_instance_server" "docker_instance" {
   }
 
   additional_volume_ids = [scaleway_block_volume.volume.id]
+
+  user_data = {
+    # foo        = "bar"
+    myfoo = "bar"
+    cloud-init = file("${path.module}/cloud-init.yml")
+  }
 }
 
 # Print public IP

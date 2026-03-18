@@ -1,0 +1,20 @@
+#cloud-config
+# https://docs.cloud-init.io/en/latest/reference/examples.html#yaml-examples
+# Update apt database on first boot (run 'apt-get update').
+# Note, if packages are given, or package_upgrade is true, then
+# update will be done independent of this setting.
+#
+# Default: false
+package_update: true
+# package_upgrade: true
+
+# packages:
+#     - gcc
+
+# # # Runs on boot
+# bootcmd:
+#     - date >> /root/bootcmd_log.txt
+#
+# # # Runs later in the process but just the first time
+# runcmd:
+#     - date >> /root/runcmd_log.txt
