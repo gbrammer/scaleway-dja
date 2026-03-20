@@ -81,6 +81,10 @@ cat <<EOF >> /root/.bashrc
 alias saws="aws --profile scw"
 EOF
 
+##################
+# Manually add credentials environment vars
+##################
+
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
@@ -146,6 +150,7 @@ curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/g
 
 # python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa --fixed
 # python3 $HOME/scaleway-dja/processor-instance/app/app.py --ifu --fixed
+# python3 $HOME/scaleway-dja/processor-instance/app/app.py --assoc --fixed
 
 # COPY run_msa_tests.py .
 
