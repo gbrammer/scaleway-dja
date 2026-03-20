@@ -390,6 +390,13 @@ if __name__ == '__main__':
         if "--fixed" in sys.argv:
             json_data["file"] = "jw04866002001_03101_00002_nrs2_rate.fits"
 
+        if "file" not in json_data:
+            rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
+            if len(rows) == 0:
+                exit
+
+            json_data["file"] = rows['rate_file'][0]
+
         run_one_msa(**json_data)
 
     elif "--assoc" in sys.argv:

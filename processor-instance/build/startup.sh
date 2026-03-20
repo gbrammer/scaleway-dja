@@ -17,31 +17,34 @@ export jref=/GrizliImaging/GRIZLI/jref
 mkdir /GrizliImaging
 
 # WORKDIR /GrizliImaging
+# curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda -c
+
 curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda -c
+bash Miniconda3-latest-Linux-x86_64.sh -b -p /etc/miniconda -c
+
 rm Miniconda3-latest-Linux-x86_64.sh
 
 # source .bashrc
-__conda_setup="$('/root/miniconda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+__conda_setup="$('/etc/miniconda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
 
 # This stuff in .bashrc from conda init
 if [ $? -eq 0 ]; then
     echo "eval conda_setup"
     eval "$__conda_setup"
 else
-    if [ -f "/root/miniconda/etc/profile.d/conda.sh" ]; then
-        echo "run /root/miniconda/etc/profile.d/conda.sh"
-        . "/root/miniconda/etc/profile.d/conda.sh"
+    if [ -f "/etc/miniconda/etc/profile.d/conda.sh" ]; then
+        echo "run /etc/miniconda/etc/profile.d/conda.sh"
+        . "/etc/miniconda/etc/profile.d/conda.sh"
     else
-        echo "export PATH=\"/root/miniconda/bin:$PATH\""
-        export PATH="/root/miniconda/bin:$PATH"
+        echo "export PATH=\"/etc/miniconda/bin:$PATH\""
+        export PATH="/etc/miniconda/bin:$PATH"
     fi
 fi
 
 # startup in .bashrc
-cat <<EOF >> /root/.bashrc
 
-conda activate py312
+cat <<EOF > /root/setup_environment.sh
 
 # GRIZLI environment
 export CRDS_PATH=/GrizliImaging/crds_cache
@@ -90,6 +93,13 @@ conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
 conda create -n py312 "python=3.12" -y
 conda activate py312
+
+cat <<EOF >> /root/.bashrc
+
+conda activate py312
+. /root/setup_environment.sh
+
+EOF
 
 pip install pip --upgrade
 
