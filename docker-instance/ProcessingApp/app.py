@@ -222,7 +222,7 @@ def run_one_ifu(**json_data):
         app.logger.error(f"run_one_preprocess_ifu: 'rowid' not specified")
         return False
 
-    lockfile = "ifu_{rowid}.lock".format(**json_data)
+    lockfile = os.path.join(os.getcwd(), "ifu_{rowid}.lock".format(**json_data))
     
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
@@ -261,7 +261,11 @@ def run_one_ifu_product(**json_data):
         app.logger.error(f"run_one_ifu_product: 'rowid' not specified")
         return False
 
-    lockfile = "ifu_product_{rowid}.lock".format(**json_data)
+
+    lockfile = os.path.join(
+        os.getcwd(),
+        "ifu_product_{rowid}.lock".format(**json_data)
+    )
     
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
@@ -297,7 +301,10 @@ def run_one_msa(**json_data):
         app.logger.error(f"run_one_msa_preprocess: 'file' not specified")
         return False
 
-    lockfile = json_data['file'].replace("rate.fits", "rate.lock")
+    lockfile = os.path.join(
+        os.getcwd(),
+        json_data['file'].replace("rate.fits", "rate.lock")
+    )
 
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
@@ -346,7 +353,7 @@ def run_one_assoc(**json_data):
 
     assoc = json_data.pop('assoc_name')
     
-    lockfile = f'x_{assoc}.lock'
+    lockfile = os.path.join(os.getcwd(), f'x_{assoc}.lock')
 
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
