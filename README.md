@@ -24,9 +24,15 @@ scw init
 
 https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 
+https://www.scaleway.com/en/docs/tutorials/deploy-instances-packer-terraform/
+
 ```bash
 brew tap hashicorp/tap
 brew install hashicorp/tap/terraform
+
+brew tap hashicorp/tap
+brew install hashicorp/tap/packer
+
 ```
 
 ## 
