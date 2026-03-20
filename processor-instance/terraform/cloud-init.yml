@@ -36,8 +36,8 @@ write_files:
       
       cd /GrizliImaging/
       
-      conda run -n py312 python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa
-      shutdown
+      # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --msa
+      # shutdown
       
       echo 'Script executed successfully!' >> /run/run_testing.txt
       

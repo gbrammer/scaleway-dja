@@ -13,7 +13,7 @@ terraform apply $INIT_VARS -auto-approve
 
 INIT_VARS="-var instance_count=1 -var instance_type=POP2-4C-16G -var server_image=img-grizli-processor2 -var name_prefix=worker -var volume_size=16"
 
-INIT_VARS="-var instance_count=4 -var instance_type=POP2-2C-8G -var server_image=img-grizli-processor2 -var name_prefix=worker -var volume_size=16"
+# INIT_VARS="-var instance_count=4 -var instance_type=POP2-2C-8G -var server_image=img-grizli-processor2 -var name_prefix=worker -var volume_size=16"
 
 terraform plan $INIT_VARS
 terraform apply $INIT_VARS -auto-approve
