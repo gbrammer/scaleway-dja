@@ -1,3 +1,7 @@
+
+
+# TODO: fix read-write AWS account
+
 # apt-get update
 # apt-get install git -y
 # apt-get install gcc -y

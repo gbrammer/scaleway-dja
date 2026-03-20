@@ -31,6 +31,13 @@ write_files:
       
       echo "yPATH ${PATH}" >> /root/runcmd_log.txt
       
+      cd /root/scaleway-dja
+      git pull
+      
+      cd /GrizliImaging/
+      
+      # conda run -n py312 python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa
+      
       echo 'Script executed successfully!' >> /run/run_testing.txt
       
     permissions: '0755'
