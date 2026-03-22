@@ -50,7 +50,8 @@ try:
     handler_kwargs = dict(
         url=f"{os.getenv('COCKPIT_LOG_URL')}/loki/api/v1/push",
         tags={"job": "logs_from_container"},
-        auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
+        # auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
+        auth=(os.getenv('COCKPIT_LOG_TOKEN')),
         version="1",
     )
 
@@ -60,7 +61,7 @@ try:
     for key in [
         'COCKPIT_LOG_URL',
         'COCKPIT_LOG_TOKEN',
-        'COCKPIT_API_KEY',
+        # 'COCKPIT_API_KEY',
     ]:
         if os.getenv(key) is None:
             has_key[key] = False
@@ -420,7 +421,18 @@ if __name__ == '__main__':
         if "--fixed" in sys.argv:
             json_data["assoc_name"] = "j175356p6510_nexus-center-9263-f115w_00634"
 
-        run_one_assoc(**json_data)
+        if "assoc_name" not in json_data:
+                rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
+
+            if len(rows) == 0:
+                exit
+
+            while len(rows) > 0:
+                json_data["assoc_name"] = rows['assoc_name'][0]
+                run_one_assoc(**json_data)
+                rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
+        else:
+            run_one_assoc(**json_data)
 
     elif "--another" in sys.argv:
 
