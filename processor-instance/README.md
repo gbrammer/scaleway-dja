@@ -25,14 +25,31 @@ export COCKPIT_LOG_URL=https://xxx.logs.cockpit.fr-par.scw.cloud
 export COCKPIT_LOG_TOKEN=xxx
 EOF
 
+### On remote machine, create a snapshot+image
+### with the scaleway API
+scw_volume_id=`scw block volume list | tail -1 | awk '{print $1}'`
+
+snapshot_suffix=grizli-processor4
+
+scw block snapshot create ${scw_volume_id} name=snap-${snapshot_suffix} zone=fr-par-1
+
+scw_snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
+
+scw instance image create name=img-${snapshot_suffix} snapshot-id=${scw_snapshot_id} arch=x86_64 public=false zone=fr-par-1
+
+# Delete the image/snapshot pair
+scw_image_id=`scw instance image list | grep ${snapshot_suffix} | awk '{print $1}'`
+scw instance image delete ${scw_image_id} zone=fr-par-1 with-snapshots=true
+
 ```
+
 
 # Launch processing instances
 
 ```bash
 cd $SCWREPO/processor-instance/terraform
 ```
-
+ 
 ## Set up instances
 ```bash
 
