@@ -214,7 +214,7 @@ def run_one_ifu(**json_data):
         json_data["sync"] = True
 
     if "clean" not in json_data:
-        json_data["clean"] = True
+        json_data["clean"] = 3
 
     # instance_hash = get_hashroot()
     app.logger.info(f"run_one_preprocess_ifu: {json.dumps(json_data)}")
@@ -224,13 +224,13 @@ def run_one_ifu(**json_data):
         return False
 
     lockfile = os.path.join(
-        os.getcwd(),
+        '/GrizliImaging',
         "ifu_{rowid}.lock".format(**json_data)
     )
     
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
-            f"run_one_preprocess_ifu: {lockfile} found in {os.getcwd()}"
+            f"run_one_preprocess_ifu: {lockfile} found"
         )
         return False
 
@@ -266,13 +266,13 @@ def run_one_ifu_product(**json_data):
         return False
 
     lockfile = os.path.join(
-        os.getcwd(),
+        '/GrizliImaging',
         "ifu_product_{rowid}.lock".format(**json_data)
     )
     
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
-            f"run_one_preprocess_ifu: {lockfile} found in {os.getcwd()}"
+            f"run_one_preprocess_ifu: {lockfile} found"
         )
         return False
 
@@ -305,13 +305,13 @@ def run_one_msa(**json_data):
         return False
 
     lockfile = os.path.join(
-        os.getcwd(),
+        '/GrizliImaging',
         'msa_' + json_data['file'].replace("rate.fits", "rate.lock")
     )
 
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
-            f"run_one_msa_preprocess: {lockfile} found in {os.getcwd()}"
+            f"run_one_msa_preprocess: {lockfile} found"
         )
         return False
 
@@ -355,15 +355,15 @@ def run_one_assoc(**json_data):
         return False
 
     assoc = json_data.pop('assoc_name')
-    
+
     lockfile = os.path.join(
-        os.getcwd(),
+        '/GrizliImaging',
         f'assoc_{assoc}.lock'
     )
 
     if os.path.exists(lockfile) & ('force' not in json_data):
         app.logger.critical(
-            f"run_one_assoc: {lockfile} found in {os.getcwd()}"
+            f"run_one_assoc: {lockfile} found"
         )
         return False
 
@@ -410,12 +410,16 @@ if __name__ == '__main__':
             rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
 
             if len(rows) == 0:
+                with open(
+                    os.path.join('/GrizliImaging', 'msa_finished.txt')),
+                    "a"
+                ) as fp:
+                    fp.write(time.ctime() + "\n")
+
                 raise ValueError("Nothing to do for preprocess_nirspec")
 
-            while len(rows) > 0:
-                json_data["file"] = rows['rate_file'][0]
-                run_one_msa(**json_data)
-                rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
+            json_data["file"] = rows['rate_file'][0]
+            run_one_msa(**json_data)
 
         else:
             run_one_msa(**json_data)
@@ -428,6 +432,12 @@ if __name__ == '__main__':
             rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
 
             if len(rows) == 0:
+                with open(
+                    os.path.join('/GrizliImaging', 'assoc_finished.txt')),
+                    "a"
+                ) as fp:
+                    fp.write(time.ctime() + "\n")
+
                 raise ValueError("Nothing to do for assoc")
 
             json_data["assoc_name"] = rows['assoc_name'][0]
