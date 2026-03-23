@@ -14,8 +14,7 @@ package_update: true
 # Runs on boot
 bootcmd:
     - date >> /root/bootcmd_log.txt
-#
+
 # Runs later in the process but just the first time
 runcmd:
     - date >> runcmd_log.txt
-#    - git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja

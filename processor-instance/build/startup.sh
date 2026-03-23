@@ -153,7 +153,7 @@ python -c "import grizli.utils; grizli.utils.symlink_templates(force=True)"
 
 git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja
 
-python scaleway-dja/processor-instance/app/initialize_crds.py
+python scaleway-dja/processor-instance/build/initialize_crds.py
 
 # scw cli
 curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
