@@ -23,6 +23,12 @@ variable "max_process_locks" {
   default     = 2
 }
 
+variable "app_process_types" {
+  type        = string
+  description = "Types of app processes to run"
+  default     = "assoc"
+}
+
 variable "server_image" {
   type        = string
   description = "Server image name like 'ubuntu_jammy'"
@@ -120,6 +126,7 @@ resource "scaleway_instance_server" "this_instance" {
     # foo        = "bar"
     # myfoo = "bar"
     max_process_locks = "${var.max_process_locks}"
+    app_process_types = "${var.app_process_types}"
     cloud-init = file("${path.module}/cloud-init.yml")
   }
 }

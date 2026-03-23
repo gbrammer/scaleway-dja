@@ -34,11 +34,7 @@ write_files:
       cd /root/scaleway-dja
       git pull
       
-      cd /GrizliImaging/
-      
-      # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
-      # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --msa
-      # shutdown
+      echo "source /root/scaleway-dja/processor-instance/app/bash_extras.sh" >> ~/.bashrc
       
       echo 'Script executed successfully!' >> /run/run_testing.txt
       
@@ -53,14 +49,20 @@ write_files:
 
         cd /GrizliImaging/
 
-        count_lockfiles=`ls *lock | wc -l`
+        max_locks=`scw-userdata max_process_locks`
+        app_types=`scw-userdata app_process_types | sed "s/_/ /g"`
+
+        for app in ${app_types}; do
+            count_lockfiles=`ls *lock | wc -l`
         
-        if [[ $count_lockfiles -lt 2 ]]; then
-            echo `date` "Found ${count_lockfiles} lock files >> run app.py --assoc" >> /GrizliImaging/cron.log.txt
-            conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
-        else
-            echo "Found ${count_lockfiles} lock files" >> /GrizliImaging/cron.log.txt
-        fi
+            if [[ $count_lockfiles -lt $max_locks ]]; then
+                msg="Found ${count_lockfiles} lock files >> run app.py --${app}"
+                echo `date` ${msg} >> /GrizliImaging/cron.log.txt
+                conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --${app}
+            else
+                echo "Found ${count_lockfiles} lock files" >> /GrizliImaging/cron.log.txt
+            fi
+        done
         
     permissions: '0755'
 
@@ -68,7 +70,7 @@ write_files:
 bootcmd:
     - date >> /root/bootcmd_log.txt
     - ls /root/ >> /root/bootcmd_log.txt
-    - [ bash, "/root/boot-conda-environment.sh"]
+    # - [ bash, "/root/boot-conda-environment.sh"]
     
 # Runs later in the process but just the first time
 runcmd:
