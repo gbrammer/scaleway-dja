@@ -416,8 +416,9 @@ if __name__ == '__main__':
                 ) as fp:
                     fp.write(time.ctime() + "\n")
 
-                raise ValueError("Nothing to do for preprocess_nirspec")
-
+                print("Nothing to do for preprocess_nirspec")
+                sys.exit()
+                
             json_data["file"] = rows['rate_file'][0]
             run_one_msa(**json_data)
 
@@ -438,7 +439,8 @@ if __name__ == '__main__':
                 ) as fp:
                     fp.write(time.ctime() + "\n")
 
-                raise ValueError("Nothing to do for assoc")
+                print("Nothing to do for assoc")
+                sys.exit()
 
             json_data["assoc_name"] = rows['assoc_name'][0]
             run_one_assoc(**json_data)
