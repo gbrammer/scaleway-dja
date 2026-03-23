@@ -1,6 +1,34 @@
 
 # Manage instances with terraform
 
+## Build the environment
+
+```bash
+cd $SCWREPO/processor-instance/build/terraform
+
+terraform plan
+terraform apply -auto-approve
+
+### Run commands in `startup.sh` on the instance
+SCWDOCKER=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
+grep -v $SCWDOCKER ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCWDOCKER}
+
+### Set local environment variables
+cat <<EOF >> /root/setup_environment.sh
+
+export DB_HOST=xxx
+export DB_USER=xxx
+export DB_PASS=xxx
+export DB_NAME=xxx
+
+export COCKPIT_LOG_URL=https://xxx.logs.cockpit.fr-par.scw.cloud
+export COCKPIT_LOG_TOKEN=xxx
+EOF
+
+```
+
+# Launch processing instances
+
 ```bash
 cd $SCWREPO/processor-instance/terraform
 ```
