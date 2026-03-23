@@ -306,7 +306,7 @@ def run_one_msa(**json_data):
 
     lockfile = os.path.join(
         os.getcwd(),
-        json_data['file'].replace("rate.fits", "rate.lock")
+        'msa_' + json_data['file'].replace("rate.fits", "rate.lock")
     )
 
     if os.path.exists(lockfile) & ('force' not in json_data):
@@ -358,7 +358,7 @@ def run_one_assoc(**json_data):
     
     lockfile = os.path.join(
         os.getcwd(),
-        f'x_{assoc}.lock'
+        f'assoc_{assoc}.lock'
     )
 
     if os.path.exists(lockfile) & ('force' not in json_data):
@@ -371,14 +371,17 @@ def run_one_assoc(**json_data):
         fp.write(time.ctime() + "\n")
 
     try:
-        visit_processor.process_visit(assoc, **json_data)
+        # visit_processor.process_visit(assoc, **json_data)
+        pass
 
     except Exception as exc:
         exc_info = sys.exc_info()
         exc_report = ''.join(traceback.format_exception(*exc_info))
         app.logger.error(f"run_one_assoc: {exc_report}")
 
+    app.logger.info(f"run_one_assoc: {json.dumps(json_data)}")
     app.logger.info(f"run_one_assoc: complete")
+    os.remove(lockfile)
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8080)
