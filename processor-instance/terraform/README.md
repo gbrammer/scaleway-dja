@@ -7,7 +7,7 @@ INIT_VARS="-var instance_count=1 -var instance_type=DEV1-L -var server_image=ubu
 terraform plan $INIT_VARS
 terraform apply $INIT_VARS -auto-approve
 
-INIT_VARS="-var instance_count=1 -var instance_type=DEV1-L -var server_image=processor-build1 -var name_prefix=worker -var volume_size=16"
+INIT_VARS="-var instance_count=1 -var instance_type=DEV1-L -var server_image=processor-build3 -var name_prefix=worker -var volume_size=16"
 terraform plan $INIT_VARS
 terraform apply $INIT_VARS -auto-approve
 
