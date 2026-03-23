@@ -36,13 +36,36 @@ write_files:
       
       cd /GrizliImaging/
       
+      # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
       # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --msa
       # shutdown
       
       echo 'Script executed successfully!' >> /run/run_testing.txt
       
     permissions: '0755'
-        
+
+  - path: /run/run-processor-cron.sh
+    content: |
+        #!/bin/bash
+
+        . /etc/miniconda/etc/profile.d/conda.sh
+        . /root/setup_environment.sh
+    
+        cd /root/scaleway-dja
+        git pull
+
+        cd /GrizliImaging/
+
+        count_lockfiles=`ls *lock | wc -l`
+        if [[ $count_lockfiles -lt 2 ]]; then
+          # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
+          echo "Execute app.py --assoc"
+        else
+          echo "Found ${count_lockfiles} lock files"
+        fi
+      
+    permissions: '0755'
+
 # Runs on boot
 bootcmd:
     - date >> /root/bootcmd_log.txt
@@ -54,4 +77,5 @@ runcmd:
     - date >> /root/runcmd_log.txt
     - ls /root/ >> /root/runcmd_log.txt
     - [ bash, "/run/run-conda-environment.sh"]
+    - echo ""
 #    - git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja

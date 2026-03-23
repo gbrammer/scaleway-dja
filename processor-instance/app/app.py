@@ -371,8 +371,8 @@ def run_one_assoc(**json_data):
         fp.write(time.ctime() + "\n")
 
     try:
-        # visit_processor.process_visit(assoc, **json_data)
-        pass
+        visit_processor.process_visit(assoc, **json_data)
+        # pass
 
     except Exception as exc:
         exc_info = sys.exc_info()
