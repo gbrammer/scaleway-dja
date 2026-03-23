@@ -411,7 +411,7 @@ if __name__ == '__main__':
 
             if len(rows) == 0:
                 with open(
-                    os.path.join('/GrizliImaging', 'msa_finished.txt')),
+                    os.path.join('/GrizliImaging', 'msa_finished.txt'),
                     "a"
                 ) as fp:
                     fp.write(time.ctime() + "\n")
@@ -433,7 +433,7 @@ if __name__ == '__main__':
 
             if len(rows) == 0:
                 with open(
-                    os.path.join('/GrizliImaging', 'assoc_finished.txt')),
+                    os.path.join('/GrizliImaging', 'assoc_finished.txt'),
                     "a"
                 ) as fp:
                     fp.write(time.ctime() + "\n")
