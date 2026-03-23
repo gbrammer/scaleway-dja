@@ -400,7 +400,7 @@ if __name__ == "__main__":
                 print("Nothing to do for nirspec_ifu_exposures")
                 sys.exit()
 
-            json_data["rowid"] = rows["rowid"][0]
+            json_data["rowid"] = int(rows["rowid"][0])
 
         run_one_ifu(**json_data)
 
