@@ -44,26 +44,29 @@ write_files:
       
     permissions: '0755'
 
-  - path: /run/run-processor-cron.sh
+  - path: /root/run-processor-cron.sh
     content: |
         #!/bin/bash
 
         . /etc/miniconda/etc/profile.d/conda.sh
         . /root/setup_environment.sh
-    
-        cd /root/scaleway-dja
-        git pull
+        echo `date` "Env: ${GRIZLI}" `which python3` `which conda` >> /GrizliImaging/cron.log.txt
+
+        # cd /root/scaleway-dja
+        # git pull
 
         cd /GrizliImaging/
 
         count_lockfiles=`ls *lock | wc -l`
+        echo `date` "Found ${count_lockfiles} lock files" >> /GrizliImaging/cron.log.txt
+
         if [[ $count_lockfiles -lt 2 ]]; then
-          # conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
-          echo "Execute app.py --assoc"
+            echo "Run app.py --assoc" >> /GrizliImaging/cron.log.txt
+            conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
+            # python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
         else
-          echo "Found ${count_lockfiles} lock files"
-        fi
-      
+            echo "Found ${count_lockfiles} lock files"
+        fi      
     permissions: '0755'
 
 # Runs on boot

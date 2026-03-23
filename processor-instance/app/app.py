@@ -256,7 +256,7 @@ def run_one_ifu_product(**json_data):
         json_data["sync"] = True
 
     if "clean" not in json_data:
-        json_data["clean"] = True
+        json_data["clean"] = 3
 
     # instance_hash = get_hashroot()
     app.logger.info(f"run_one_ifu_product: {json.dumps(json_data)}")
@@ -337,7 +337,7 @@ def run_one_assoc(**json_data):
         json_data["sync"] = True
 
     if "clean" not in json_data:
-        json_data["clean"] = True
+        json_data["clean"] = 3
 
     # instance_hash = get_hashroot()
     app.logger.info(f"run_one_assoc: {json.dumps(json_data)}")
