@@ -427,10 +427,9 @@ if __name__ == '__main__':
             if len(rows) == 0:
                 exit
 
-            while len(rows) > 0:
-                json_data["assoc_name"] = rows['assoc_name'][0]
-                run_one_assoc(**json_data)
-                rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
+            json_data["assoc_name"] = rows['assoc_name'][0]
+            run_one_assoc(**json_data)
+
         else:
             run_one_assoc(**json_data)
 
