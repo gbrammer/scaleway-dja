@@ -1,10 +1,12 @@
 
 # Manage instances with terraform
 
+```bash
+cd $SCWREPO/processor-instance/terraform
+```
+
 ## Set up instances
 ```bash
-
-cd $SCWREPO/processor-instance/terraform
 
 instance_count=1
 
