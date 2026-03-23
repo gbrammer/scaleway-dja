@@ -407,7 +407,7 @@ if __name__ == '__main__':
             rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
 
             if len(rows) == 0:
-                exit
+                raise ValueError("Nothing to do for preprocess_nirspec")
 
             while len(rows) > 0:
                 json_data["file"] = rows['rate_file'][0]
@@ -422,10 +422,10 @@ if __name__ == '__main__':
             json_data["assoc_name"] = "j175356p6510_nexus-center-9263-f115w_00634"
 
         if "assoc_name" not in json_data:
-                rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
+            rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
 
             if len(rows) == 0:
-                exit
+                raise ValueError("Nothing to do for assoc")
 
             json_data["assoc_name"] = rows['assoc_name'][0]
             run_one_assoc(**json_data)
