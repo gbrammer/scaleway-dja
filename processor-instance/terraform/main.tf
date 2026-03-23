@@ -17,6 +17,12 @@ variable "instance_count" {
   default     = 1
 }
 
+variable "max_process_locks" {
+  type        = number
+  description = "Maximum number of process locks"
+  default     = 2
+}
+
 variable "server_image" {
   type        = string
   description = "Server image name like 'ubuntu_jammy'"
@@ -83,6 +89,10 @@ resource "scaleway_instance_security_group" "www" {
 
 }
 
+resource "scaleway_instance_placement_group" "availability_group" {
+    name = "${var.name_prefix}-group"
+}
+
 # Instance
 resource "scaleway_instance_server" "this_instance" {
   
@@ -97,6 +107,8 @@ resource "scaleway_instance_server" "this_instance" {
   
   name = each.value
 
+  placement_group_id = scaleway_instance_placement_group.availability_group.id
+
   root_volume {
     delete_on_termination = true
     volume_type = "sbs_volume"
@@ -107,6 +119,7 @@ resource "scaleway_instance_server" "this_instance" {
   user_data = {
     # foo        = "bar"
     # myfoo = "bar"
+    max_process_locks = "${var.max_process_locks}"
     cloud-init = file("${path.module}/cloud-init.yml")
   }
 }

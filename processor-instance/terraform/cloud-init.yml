@@ -55,7 +55,7 @@ write_files:
 
         count_lockfiles=`ls *lock | wc -l`
         
-        if [[ $count_lockfiles -lt 4 ]]; then
+        if [[ $count_lockfiles -lt 2 ]]; then
             echo `date` "Found ${count_lockfiles} lock files >> run app.py --assoc" >> /GrizliImaging/cron.log.txt
             conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --assoc
         else
