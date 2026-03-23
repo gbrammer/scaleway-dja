@@ -29,17 +29,18 @@ except ImportError:
 import logging_loki
 from flask import Flask, request
 
+
 def get_hashroot():
     hash_key = secrets.token_urlsafe(16)[:6]
     return hash_key.lower().replace("-", "x")
+
 
 THIS_HOST = socket.gethostname()
 if "deployment" in THIS_HOST:
     THIS_HOST = "deployment-" + THIS_HOST.split("-")[-1]
 
 THIS_HASH = f"[{get_hashroot()} {THIS_HOST}]".replace(
-    "Gabriels-MacBook-Pro.local",
-    "macbook-pro.local"
+    "Gabriels-MacBook-Pro.local", "macbook-pro.local"
 )
 
 DEFAULT_PORT = "8080"
@@ -51,37 +52,37 @@ try:
         url=f"{os.getenv('COCKPIT_LOG_URL')}/loki/api/v1/push",
         tags={"job": "logs_from_container"},
         # auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
-        auth=(os.getenv('COCKPIT_LOG_TOKEN')),
+        auth=(os.getenv("COCKPIT_LOG_TOKEN")),
         version="1",
     )
 
     has_key = {}
-    
+
     keyfail = False
     for key in [
-        'COCKPIT_LOG_URL',
-        'COCKPIT_LOG_TOKEN',
+        "COCKPIT_LOG_URL",
+        "COCKPIT_LOG_TOKEN",
         # 'COCKPIT_API_KEY',
     ]:
         if os.getenv(key) is None:
             has_key[key] = False
-            print(f'env: {key} not set')
+            print(f"env: {key} not set")
             keyfail = True
         else:
             has_key[key] = True
-    
+
     if keyfail:
         raise ValueError
 
     log_formatter = logging.Formatter(
-        THIS_HASH + ' - %(name)s - %(levelname)s -  %(message)s'
+        THIS_HASH + " - %(name)s - %(levelname)s -  %(message)s"
     )
 
     handler = logging_loki.LokiHandler(**handler_kwargs)
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(log_formatter)
     # logger.addHandler(handler)
-    
+
     # ch = logging.StreamHandler()
     # ch.setLevel(logging.DEBUG)
     # ch.setFormatter(log_formatter)
@@ -89,7 +90,7 @@ try:
     # logger.addHandler(ch)
     #
     # logger.info(f"initialize logger")
-    
+
     has_loki_logger = True
 
 except:
@@ -97,8 +98,8 @@ except:
     has_loki_logger = False
 
 app.logger.setLevel(logging.DEBUG)
-app.logger.debug(f'has_loki_logger: {has_loki_logger}')
-app.logger.debug(f'log hash: {THIS_HASH}')
+app.logger.debug(f"has_loki_logger: {has_loki_logger}")
+app.logger.debug(f"log hash: {THIS_HASH}")
 
 if has_loki_logger:
     app.logger.addHandler(handler)
@@ -112,7 +113,7 @@ if has_loki_logger:
         msa.LOGGER.addHandler(handler)
         msa.LOGGER.setLevel(logging.DEBUG)
 
-modules = ['grizli','msaexp','jwst','numpy']
+modules = ["grizli", "msaexp", "jwst", "numpy"]
 module_versions = {}
 for mod in modules:
     try:
@@ -124,25 +125,28 @@ app.logger.info(f"modules: {json.dumps(module_versions)}")
 
 # logger.root.level = logging.DEBUG
 
-@app.route('/', methods=["GET", "POST"])
+
+@app.route("/", methods=["GET", "POST"])
 def app_root():
-        
+
     app.logger.info(f"request args: {json.dumps(request.args)}")
 
-    os.chdir('/GrizliImaging/')
+    os.chdir("/GrizliImaging/")
 
-    if request.method == 'POST':
-        json_data = json.loads(request.data.replace(b",\n}",b"}"))
+    if request.method == "POST":
+        json_data = json.loads(request.data.replace(b",\n}", b"}"))
 
         if 0:
-            raise ValueError(f'xxx raw request.data: {request.data}')
+            raise ValueError(f"xxx raw request.data: {request.data}")
 
-        POST = f'POST: {json_data}'
+        POST = f"POST: {json_data}"
 
         app.logger.info(f"post data: {json.dumps(json_data)}")
-        
+
         if "runmode" in json_data:
             runmode = json_data.pop("runmode")
+
+            initialize_with_sleep()
 
             if runmode == "initialize":
                 initialize_with_sleep(**json_data)
@@ -157,13 +161,11 @@ def app_root():
             elif runmode == "another":
                 another_function(**json_data)
             else:
-                app.logger.error(
-                    f"runmode={runmode} not recognized"
-                )
+                app.logger.error(f"runmode={runmode} not recognized")
 
     else:
-        POST = 'GET'
-        
+        POST = "GET"
+
     doc = f"""<!DOCTYPE html>
 <html>
 <body>
@@ -185,26 +187,27 @@ request args: {json.dumps(request.args)}
 </html>"""
     return doc
 
+
 def initialize_with_sleep(**json_data):
-    """
-    """
+    """ """
     import time
     import numpy as np
-    
+
     sleep_time = 5 + np.random.rand() * 5
     app.logger.info(
         f"initialize: {json.dumps(json_data)} + sleep for {sleep_time:.2f} s"
     )
-    
+
     time.sleep(sleep_time)
+
 
 def another_function(**json_data):
     """
     Test for logging
     """
     app.logger.info(f"another_function: {json.dumps(json_data)}")
-    
-    
+
+
 def run_one_ifu(**json_data):
     """
     Run a file with status = 0
@@ -223,15 +226,10 @@ def run_one_ifu(**json_data):
         app.logger.error(f"run_one_preprocess_ifu: 'rowid' not specified")
         return False
 
-    lockfile = os.path.join(
-        '/GrizliImaging',
-        "ifu_{rowid}.lock".format(**json_data)
-    )
-    
-    if os.path.exists(lockfile) & ('force' not in json_data):
-        app.logger.critical(
-            f"run_one_preprocess_ifu: {lockfile} found"
-        )
+    lockfile = os.path.join("/GrizliImaging", "ifu_{rowid}.lock".format(**json_data))
+
+    if os.path.exists(lockfile) & ("force" not in json_data):
+        app.logger.critical(f"run_one_preprocess_ifu: {lockfile} found")
         return False
 
     with open(lockfile, "w") as fp:
@@ -241,11 +239,12 @@ def run_one_ifu(**json_data):
         row = ifu.run_one_preprocess_ifu(**json_data)
     except Exception as exc:
         exc_info = sys.exc_info()
-        exc_report = ''.join(traceback.format_exception(*exc_info))
+        exc_report = "".join(traceback.format_exception(*exc_info))
         app.logger.error(f"run_one_preprocess_ifu: {exc_report}")
 
     app.logger.info(f"run_one_preprocess_ifu: complete")
     os.remove(lockfile)
+
 
 def run_one_ifu_product(**json_data):
     """
@@ -266,14 +265,11 @@ def run_one_ifu_product(**json_data):
         return False
 
     lockfile = os.path.join(
-        '/GrizliImaging',
-        "ifu_product_{rowid}.lock".format(**json_data)
+        "/GrizliImaging", "ifu_product_{rowid}.lock".format(**json_data)
     )
-    
-    if os.path.exists(lockfile) & ('force' not in json_data):
-        app.logger.critical(
-            f"run_one_preprocess_ifu: {lockfile} found"
-        )
+
+    if os.path.exists(lockfile) & ("force" not in json_data):
+        app.logger.critical(f"run_one_preprocess_ifu: {lockfile} found")
         return False
 
     with open(lockfile, "w") as fp:
@@ -283,18 +279,19 @@ def run_one_ifu_product(**json_data):
         row = ifu.run_one_products_ifu(**json_data)
     except Exception as exc:
         exc_info = sys.exc_info()
-        exc_report = ''.join(traceback.format_exception(*exc_info))
+        exc_report = "".join(traceback.format_exception(*exc_info))
         app.logger.error(f"run_one_ifu_product: {exc_report}")
 
     app.logger.info(f"run_one_ifu_product: complete")
     os.remove(lockfile)
+
 
 # @app.route('/msa', methods=["GET", "POST"])
 def run_one_msa(**json_data):
     """
     Run a file with status = 0
     """
-    
+
     if "sync" not in json_data:
         json_data["sync"] = True
 
@@ -305,14 +302,11 @@ def run_one_msa(**json_data):
         return False
 
     lockfile = os.path.join(
-        '/GrizliImaging',
-        'msa_' + json_data['file'].replace("rate.fits", "rate.lock")
+        "/GrizliImaging", "msa_" + json_data["file"].replace("rate.fits", "rate.lock")
     )
 
-    if os.path.exists(lockfile) & ('force' not in json_data):
-        app.logger.critical(
-            f"run_one_msa_preprocess: {lockfile} found"
-        )
+    if os.path.exists(lockfile) & ("force" not in json_data):
+        app.logger.critical(f"run_one_msa_preprocess: {lockfile} found")
         return False
 
     with open(lockfile, "w") as fp:
@@ -322,11 +316,12 @@ def run_one_msa(**json_data):
         row = msa.run_one_msa_preprocess(**json_data)
     except Exception as exc:
         exc_info = sys.exc_info()
-        exc_report = ''.join(traceback.format_exception(*exc_info))
+        exc_report = "".join(traceback.format_exception(*exc_info))
         app.logger.error(f"run_one_msa_preprocess: {exc_report}")
 
     app.logger.info(f"run_one_msa_preprocess: complete")
     os.remove(lockfile)
+
 
 def run_one_assoc(**json_data):
     """
@@ -348,23 +343,16 @@ def run_one_assoc(**json_data):
         )
         return False
 
-    if 'assoc_name' not in json_data:
-        app.logger.critical(
-            f"run_one_assoc: 'assoc_name' not specified"
-        )
+    if "assoc_name" not in json_data:
+        app.logger.critical(f"run_one_assoc: 'assoc_name' not specified")
         return False
 
-    assoc = json_data.pop('assoc_name')
+    assoc = json_data.pop("assoc_name")
 
-    lockfile = os.path.join(
-        '/GrizliImaging',
-        f'assoc_{assoc}.lock'
-    )
+    lockfile = os.path.join("/GrizliImaging", f"assoc_{assoc}.lock")
 
-    if os.path.exists(lockfile) & ('force' not in json_data):
-        app.logger.critical(
-            f"run_one_assoc: {lockfile} found"
-        )
+    if os.path.exists(lockfile) & ("force" not in json_data):
+        app.logger.critical(f"run_one_assoc: {lockfile} found")
         return False
 
     with open(lockfile, "w") as fp:
@@ -376,83 +364,109 @@ def run_one_assoc(**json_data):
 
     except Exception as exc:
         exc_info = sys.exc_info()
-        exc_report = ''.join(traceback.format_exception(*exc_info))
+        exc_report = "".join(traceback.format_exception(*exc_info))
         app.logger.error(f"run_one_assoc: {exc_report}")
 
     app.logger.info(f"run_one_assoc: {json.dumps(json_data)}")
     app.logger.info(f"run_one_assoc: complete")
     os.remove(lockfile)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # app.run(host='0.0.0.0', port=8080)
 
     json_data = {"message": "local_test"}
-    
+
+    #####
+    # IFU exposure preprocessing
+    #####
     if "--ifu" in sys.argv:
         if "--fixed" in sys.argv:
             # 15601 jw05766001001_02101_00005_nrs1
             # 14390 jw06579001001_02101_00001
-
             json_data["rowid"] = 14390
+
+        if "rowid" not in json_data:
+            rows = db.SQL(
+                "select rowid from nirspec_ifu_exposures where status = 0 ORDER BY RANDOM()"
+            )
+
+            if len(rows) == 0:
+                with open(
+                    os.path.join("/GrizliImaging", "ifu_finished.txt"), "a"
+                ) as fp:
+                    fp.write(time.ctime() + "\n")
+
+                print("Nothing to do for nirspec_ifu_exposures")
+                sys.exit()
+
+            json_data["rowid"] = rows["rowid"][0]
 
         run_one_ifu(**json_data)
 
+    #####
+    # IFU combined product
+    #####
     elif "--ifu-product" in sys.argv:
         # prism test cube-03181001001_prism-clear_twa-28
         json_data["rowid"] = 594
         run_one_ifu_product(**json_data)
 
+    #####
+    # MSA exposure preprocessing
+    #####
     elif "--msa" in sys.argv:
         if "--fixed" in sys.argv:
             json_data["file"] = "jw04866002001_03101_00002_nrs2_rate.fits"
 
         if "file" not in json_data:
-            rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
+            rows = db.SQL(
+                "select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()"
+            )
 
             if len(rows) == 0:
                 with open(
-                    os.path.join('/GrizliImaging', 'msa_finished.txt'),
-                    "a"
+                    os.path.join("/GrizliImaging", "msa_finished.txt"), "a"
                 ) as fp:
                     fp.write(time.ctime() + "\n")
 
                 print("Nothing to do for preprocess_nirspec")
                 sys.exit()
-                
-            json_data["file"] = rows['rate_file'][0]
-            run_one_msa(**json_data)
 
-        else:
-            run_one_msa(**json_data)
+            json_data["file"] = rows["rate_file"][0]
 
+        run_one_msa(**json_data)
+
+    #####
+    # Imaging association
+    #####
     elif "--assoc" in sys.argv:
         if "--fixed" in sys.argv:
             json_data["assoc_name"] = "j175356p6510_nexus-center-9263-f115w_00634"
 
         if "assoc_name" not in json_data:
-            rows = db.SQL("select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()")
+            rows = db.SQL(
+                "select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()"
+            )
 
             if len(rows) == 0:
                 with open(
-                    os.path.join('/GrizliImaging', 'assoc_finished.txt'),
-                    "a"
+                    os.path.join("/GrizliImaging", "assoc_finished.txt"), "a"
                 ) as fp:
                     fp.write(time.ctime() + "\n")
 
                 print("Nothing to do for assoc")
                 sys.exit()
 
-            json_data["assoc_name"] = rows['assoc_name'][0]
-            run_one_assoc(**json_data)
+            json_data["assoc_name"] = rows["assoc_name"][0]
 
-        else:
-            run_one_assoc(**json_data)
+        run_one_assoc(**json_data)
 
     elif "--another" in sys.argv:
 
         another_function(**json_data)
 
     else:
-        port_env =  os.getenv("PORT", DEFAULT_PORT)
+        port_env = os.getenv("PORT", DEFAULT_PORT)
         port = int(port_env)
         app.run(debug=True, host="0.0.0.0", port=port)
