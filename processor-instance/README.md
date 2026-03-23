@@ -64,7 +64,7 @@ volume_size=16
 server_image=img-grizli-processor3
 
 name_prefix=worker
-app_process_types=assoc_ifu_msa
+app_process_types=assoc_msa_ifu_ifu-product
 
 INIT_VARS="-var instance_count=$instance_count -var max_process_locks=$max_process_locks -var instance_type=${instance_type} -var server_image=${server_image} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var app_process_types=${app_process_types}"
 

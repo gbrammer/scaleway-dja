@@ -54,7 +54,7 @@ write_files:
 
         for app in ${app_types}; do
             count_lockfiles=`ls *lock | wc -l`
-        
+
             if [[ $count_lockfiles -lt $max_locks ]]; then
                 msg="Found ${count_lockfiles} lock files >> run app.py --${app}"
                 echo `date` ${msg} >> /GrizliImaging/cron.log.txt
@@ -77,5 +77,4 @@ runcmd:
     - date >> /root/runcmd_log.txt
     - ls /root/ >> /root/runcmd_log.txt
     - [ bash, "/run/run-conda-environment.sh"]
-    # - git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja
     - (crontab -l 2>/dev/null || echo ""; echo "* * * * * /root/run-processor-cron.sh") | crontab -

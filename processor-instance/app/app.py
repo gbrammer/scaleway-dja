@@ -391,14 +391,18 @@ if __name__ == "__main__":
                 "select rowid from nirspec_ifu_exposures where status = 0 ORDER BY RANDOM()"
             )
 
+            finished_file = os.path.join(
+                "/GrizliImaging", "ifu_finished.txt"
+            )
             if len(rows) == 0:
-                with open(
-                    os.path.join("/GrizliImaging", "ifu_finished.txt"), "a"
-                ) as fp:
+                with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
 
                 print("Nothing to do for nirspec_ifu_exposures")
                 sys.exit()
+            else:
+                if os.path.exists(finished_file):
+                    os.remove(finished_file)
 
             json_data["rowid"] = int(rows["rowid"][0])
 
@@ -409,7 +413,29 @@ if __name__ == "__main__":
     #####
     elif "--ifu-product" in sys.argv:
         # prism test cube-03181001001_prism-clear_twa-28
-        json_data["rowid"] = 594
+        if "--fixed" in sys.argv:
+            json_data["rowid"] = 594
+        
+        if "rowid" not in json_data:
+            rows = db.SQL(
+                "select rowid from nirspec_ifu_products where status = 0 ORDER BY RANDOM()"
+            )
+
+            finished_file = os.path.join(
+                "/GrizliImaging", "ifu-products_finished.txt"
+            )
+            if len(rows) == 0:
+                with open(finished_file, "a") as fp:
+                    fp.write(time.ctime() + "\n")
+
+                print("Nothing to do for nirspec_ifu_products")
+                sys.exit()
+            else:
+                if os.path.exists(finished_file):
+                    os.remove(finished_file)
+
+            json_data["rowid"] = int(rows["rowid"][0])
+        
         run_one_ifu_product(**json_data)
 
     #####
@@ -424,14 +450,18 @@ if __name__ == "__main__":
                 "select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()"
             )
 
+            finished_file = os.path.join(
+                "/GrizliImaging", "msa_finished.txt"
+            )
             if len(rows) == 0:
-                with open(
-                    os.path.join("/GrizliImaging", "msa_finished.txt"), "a"
-                ) as fp:
+                with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
 
-                print("Nothing to do for preprocess_nirspec")
+                print("Nothing to do for preprocess_nirspec msa")
                 sys.exit()
+            else:
+                if os.path.exists(finished_file):
+                    os.remove(finished_file)
 
             json_data["file"] = rows["rate_file"][0]
 
@@ -449,14 +479,18 @@ if __name__ == "__main__":
                 "select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()"
             )
 
+            finished_file = os.path.join(
+                "/GrizliImaging", "assoc_finished.txt"
+            )
             if len(rows) == 0:
-                with open(
-                    os.path.join("/GrizliImaging", "assoc_finished.txt"), "a"
-                ) as fp:
+                with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
 
-                print("Nothing to do for assoc")
+                print("Nothing to do for assoc status=0")
                 sys.exit()
+            else:
+                if os.path.exists(finished_file):
+                    os.remove(finished_file)
 
             json_data["assoc_name"] = rows["assoc_name"][0]
 
