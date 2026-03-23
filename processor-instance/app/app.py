@@ -466,7 +466,10 @@ if __name__ == "__main__":
 
         another_function(**json_data)
 
-    else:
+    elif "--flask-server" in sys.argv:
         port_env = os.getenv("PORT", DEFAULT_PORT)
         port = int(port_env)
         app.run(debug=True, host="0.0.0.0", port=port)
+    
+    else:
+        print("Couldn't find anything to do for {sys.argv}")
