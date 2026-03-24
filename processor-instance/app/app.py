@@ -51,8 +51,8 @@ try:
     handler_kwargs = dict(
         url=f"{os.getenv('COCKPIT_LOG_URL')}/loki/api/v1/push",
         tags={"job": "logs_from_container"},
-        # auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
-        auth=(os.getenv("COCKPIT_LOG_TOKEN")),
+        auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
+        # auth=(os.getenv("COCKPIT_LOG_TOKEN")),
         version="1",
     )
 
@@ -415,7 +415,7 @@ if __name__ == "__main__":
         # prism test cube-03181001001_prism-clear_twa-28
         if "--fixed" in sys.argv:
             json_data["rowid"] = 594
-        
+
         if "rowid" not in json_data:
             rows = db.SQL(
                 "select rowid from nirspec_ifu_products where status = 0 ORDER BY RANDOM()"

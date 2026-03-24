@@ -58,13 +58,26 @@ instance_count=1
 #### instance_type=POP2-2C-8G
 instance_type=POP2-4C-16G
 max_process_locks=2
-
 volume_size=16
 
 server_image=img-grizli-processor3
 
 name_prefix=worker
 app_process_types=assoc_msa_ifu_ifu-product
+
+
+instance_type=POP2-4C-16G
+instance_count=1
+max_process_locks=3
+volume_size=18
+app_process_types=ifu-product
+
+instance_type=POP2-4C-16G
+instance_count=4
+max_process_locks=4
+volume_size=16
+app_process_types=ifu
+
 
 INIT_VARS="-var instance_count=$instance_count -var max_process_locks=$max_process_locks -var instance_type=${instance_type} -var server_image=${server_image} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var app_process_types=${app_process_types}"
 
