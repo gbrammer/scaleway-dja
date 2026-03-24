@@ -37,17 +37,20 @@ export COCKPIT_API_KEY=xxxxxxxxxx
 EOF
 
 ### On remote machine, create a snapshot+image with the scaleway API
+
+scw block volume list
+
 scw_volume_id=`scw block volume list | tail -1 | awk '{print $1}'`
 
-snapshot_suffix=grizli-processor4-x86
-
+uname -m      # on instance
 arch=x86_64
 arch=arm64
 
-snapshot_suffix=grizli-processor4-${arch}
+snapshot_suffix=grizli-processor5-${arch}
 
 scw block snapshot create ${scw_volume_id} name=snap-${snapshot_suffix} zone=fr-par-1
 
+### done; don't generate images as below
 scw_snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
 
 scw instance image create name=img-${snapshot_suffix} snapshot-id=${scw_snapshot_id} arch=${arch} public=false zone=fr-par-1

@@ -24,7 +24,7 @@ instance_type=DEV1-L # 4C / 8G
 snapshot_name=snap-grizli-processor4-x86
 
 instance_type=BASIC2-A4C-16G
-snapshot_name=snap-grizli-processor4-arm64
+snapshot_name=snap-grizli-processor5-arm64
 
 name_prefix=worker
 
