@@ -3,11 +3,19 @@
 # apt-get install gcc -y
 # apt-get install curl procps -y
 
+if [ `uname -m` -eq "aarch64" ]; then
+    apt-get install gcc -y
+    apt-get install g++ cmake pkg-config libomp-dev zlib1g-dev libcfitsio-dev gfortran -y
+fi
+# reboot
+
 export CRDS_PATH=/GrizliImaging/crds_cache
 export CRDS_SERVER_URL=https://jwst-crds.stsci.edu
 export GRIZLI=/GrizliImaging/GRIZLI
 export iref=/GrizliImaging/GRIZLI/iref
 export jref=/GrizliImaging/GRIZLI/jref
+
+git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja
 
 # initialize block storage
 # mkfs.ext4 /dev/sdb
@@ -20,10 +28,13 @@ mkdir /GrizliImaging
 # curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda -c
 
-curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b -p /etc/miniconda -c
+# MINICONDA_FILE=Miniconda3-latest-Linux-x86_64.sh
+MINICONDA_FILE=Miniconda3-latest-Linux-`uname -m`.sh
+curl -O https://repo.anaconda.com/miniconda/${MINICONDA_FILE}
 
-rm Miniconda3-latest-Linux-x86_64.sh
+bash ${MINICONDA_FILE} -b -p /etc/miniconda -c
+
+rm $MINICONDA_FILE
 
 # source .bashrc
 __conda_setup="$('/etc/miniconda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
@@ -55,6 +66,7 @@ export jref=/GrizliImaging/GRIZLI/jref
 EOF
 
 mkdir /root/.aws
+
 cat <<EOF > /root/.aws/config
 [default]
 output = text
@@ -106,29 +118,54 @@ pip install pip --upgrade
 # Install Flask
 pip install flask gunicorn
 
-pip install grizli[aws,jwst,hst] msaexp
-pip install git+https://github.com/karllark/dust_attenuation.git
+# aarm64
+
+if [ `uname -m` -eq "aarch64" ]; then
+    #### manual build HSTCAL if not in conda
+    # https://github.com/spacetelescope/hstcal/blob/main/INSTALL.md
+
+    git clone https://github.com/spacetelescope/hstcal.git
+    mkdir /root/hstcal/_build
+    cd /root/hstcal/_build
+    cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+    make
+    make install
+    cd /root
+    rm -rf hstcal
+
+    pip install -r scaleway-dja/processor-instance/build/requirements.txt
+    pip install grizli --no-deps
+
+    # Install from repo
+    pip install git+https://github.com/gbrammer/msaexp.git --upgrade --no-deps
+
+else
+    pip install grizli[aws,jwst,hst] msaexp
+    pip install git+https://github.com/karllark/dust_attenuation.git
+    pip install python-logging-loki
+
+    pip install grizli[aws,hst,jwst] --upgrade
+
+    # Install from repo
+    pip install git+https://github.com/gbrammer/msaexp.git --upgrade
+
+    pip install jupyter
+
+    conda install -c conda-forge hstcal -y
+    
+fi
+
 python -c "import eazy; eazy.fetch_eazy_photoz()"
-
-# unix utilities (procps provides "top")
-
-pip install python-logging-loki
-
-# Install from repo
-pip install grizli[aws,hst,jwst] --upgrade
-pip install git+https://github.com/gbrammer/msaexp.git --upgrade
-
-conda install -c conda-forge hstcal -y
 
 # Jupyter lab
 # https://docs.aws.amazon.com/dlami/latest/devguide/setup-jupyter-secure.html
 mkdir ssl
 cd ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
-cd ../
+# [bunch of carriage returns]
+cd /root/
 
-pip install jupyter
-jupyter notebook password
+jupyter notebook password # type password
 
 cat <<EOF >> /root/.bashrc
 alias launch_labserver='jupyter lab --certfile=~/ssl/mycert.pem --keyfile ~/ssl/mykey.key --allow-root'
@@ -151,13 +188,12 @@ python -c "import grizli.utils; grizli.utils.symlink_templates(force=True)"
 # python -c "import grizli.utils; grizli.utils.fetch_nircam_skyflats()"
 # python -c "import grizli.utils; grizli.utils.fetch_nircam_wisp_templates()"
 
-git clone "https://github.com/gbrammer/scaleway-dja.git" /root/scaleway-dja
-
 python scaleway-dja/processor-instance/build/initialize_crds.py
 
 # scw cli
 curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
 
+# test examples to fetch CRDS environment
 # python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa --fixed
 # python3 $HOME/scaleway-dja/processor-instance/app/app.py --ifu --fixed
 # python3 $HOME/scaleway-dja/processor-instance/app/app.py --assoc --fixed
