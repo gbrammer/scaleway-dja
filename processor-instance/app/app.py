@@ -50,7 +50,7 @@ app = Flask(__name__)
 try:
     handler_kwargs = dict(
         url=f"{os.getenv('COCKPIT_LOG_URL')}/loki/api/v1/push",
-        tags={"job": "logs_from_container"},
+        tags={"job": "logs_from_python"},
         auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
         # auth=(os.getenv("COCKPIT_LOG_TOKEN")),
         version="1",

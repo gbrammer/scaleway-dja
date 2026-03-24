@@ -23,19 +23,22 @@ export DB_NAME=xxx
 
 export COCKPIT_LOG_URL=https://xxx.logs.cockpit.fr-par.scw.cloud
 export COCKPIT_LOG_TOKEN=xxx
+export COCKPIT_API_KEY=xxxxxxxxxx
 EOF
 
-### On remote machine, create a snapshot+image
-### with the scaleway API
+### On remote machine, create a snapshot+image with the scaleway API
 scw_volume_id=`scw block volume list | tail -1 | awk '{print $1}'`
 
-snapshot_suffix=grizli-processor4
+snapshot_suffix=grizli-processor4-x86
 
 scw block snapshot create ${scw_volume_id} name=snap-${snapshot_suffix} zone=fr-par-1
 
 scw_snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
 
 scw instance image create name=img-${snapshot_suffix} snapshot-id=${scw_snapshot_id} arch=x86_64 public=false zone=fr-par-1
+
+scw block snapshot list
+scw instance image list
 
 # Delete the image/snapshot pair
 scw_image_id=`scw instance image list | grep ${snapshot_suffix} | awk '{print $1}'`
@@ -51,28 +54,32 @@ cd $SCWREPO/processor-instance/terraform
 ```
  
 ## Set up instances
+
+https://www.scaleway.com/en/pricing/virtual-instances/?zone=fr-par-1
+
 ```bash
 
 instance_count=1
 
-#### instance_type=POP2-2C-8G
-instance_type=POP2-4C-16G
+#### instance_type=BASIC2-2C-8G
+instance_type=GP1-XS
 max_process_locks=2
 volume_size=16
 
 server_image=img-grizli-processor3
+server_image=img-grizli-processor4-x86
 
 name_prefix=worker
 app_process_types=assoc_msa_ifu_ifu-product
 
 
-instance_type=POP2-4C-16G
+instance_type=GP1-XS
 instance_count=1
 max_process_locks=3
 volume_size=18
 app_process_types=ifu-product
 
-instance_type=POP2-4C-16G
+instance_type=GP1-XS
 instance_count=4
 max_process_locks=4
 volume_size=16
