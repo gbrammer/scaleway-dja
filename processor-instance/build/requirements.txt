@@ -44,7 +44,6 @@ astroscrappy
 drizzlepac<3.7.0
 stsci.tools
 wfc3tools
-msaexp
 git+https://github.com/karllark/dust_attenuation.git
 python-logging-loki
 jupyter
