@@ -68,21 +68,26 @@ terraform destroy $INIT_VARS -auto-approve
 ## Connect to instance
 
 ```bash
-SCWDOCKER=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
-grep -v $SCWDOCKER ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCWDOCKER}
+SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
+grep -v $SCW_INSTANCE_IP ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCW_INSTANCE_IP}
 
-./connect_to_instance.sh  #  script including the above lines
+./connect_to_instance.sh  #  script with the above lines
 ```
 
 ## jupyter
 
 ```bash
-ssh -N -f -L 8898:localhost:8888 root@${SCWDOCKER}
+SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
+
+ssh -N -f -L 8898:localhost:8888 root@${SCW_INSTANCE_IP}
+
 open "https://localhost:8898"
 ```
 
 ## flask server
 
 ```bash
-open "http://${SCWDOCKER}:8080"
+SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
+
+open "http://${SCW_INSTANCE_IP}:8080"
 ```

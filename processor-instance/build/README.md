@@ -36,7 +36,7 @@ export COCKPIT_API_KEY=xxxxxxxxxx
 
 EOF
 
-### On remote machine, create a snapshot+image with the scaleway API
+### On local machine, create a snapshot+image with the scaleway CLI
 
 scw block volume list
 
