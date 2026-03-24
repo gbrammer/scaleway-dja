@@ -18,8 +18,8 @@ https://www.scaleway.com/en/docs/instances/reference-content/instances-datasheet
 
 https://www.scaleway.com/en/docs/instances/reference-content/understanding-differences-x86-arm/
 
-**x86**: better software compatibility, perhaps better single-thread performance
-**arm**: cheaper, more energy efficient, scalable
+- **x86**: better software compatibility, perhaps better single-thread performance
+- **arm**: cheaper, more energy efficient, scalable
 
 ```bash
 
@@ -52,24 +52,26 @@ max_process_locks=4
 volume_size=16
 app_process_types=ifu
 
-
+### set variable arguments using specifications above
 INIT_VARS="-var instance_count=$instance_count -var max_process_locks=$max_process_locks -var instance_type=${instance_type} -var snapshot_name=${snapshot_name} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var app_process_types=${app_process_types}"
 
 echo $INIT_VARS | sed "s/-var/\n -var/g"
 
-### Send it
+### send terraform plan and launch instances
 terraform plan $INIT_VARS
 terraform apply $INIT_VARS -auto-approve
 
-### Shutdown
-terraform destroy $INIT_VARS
+### shutdown
+terraform destroy $INIT_VARS -auto-approve
 ```
 
 ## Connect to instance
+
 ```bash
 SCWDOCKER=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
 grep -v $SCWDOCKER ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCWDOCKER}
 
+./connect_to_instance.sh  #  script including the above lines
 ```
 
 ## jupyter
