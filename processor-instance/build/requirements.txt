@@ -47,5 +47,4 @@ wfc3tools
 msaexp
 git+https://github.com/karllark/dust_attenuation.git
 python-logging-loki
-git+https://github.com/gbrammer/msaexp.git
 jupyter
