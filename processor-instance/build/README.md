@@ -7,6 +7,7 @@
 cd $SCWREPO/processor-instance/build
 
 instance_type=GP1-XS        # x86
+instance_type=DEV1-XL        # x86
 instance_type=BASIC2-A4C-8G # arm
 
 INIT_VARS="-var instance_count=1 -var instance_type=${instance_type} -var server_image=ubuntu_jammy -var name_prefix=build"
@@ -50,6 +51,8 @@ scw block snapshot create ${scw_volume_id} name=snap-${snapshot_suffix} zone=fr-
 scw_snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
 
 scw instance image create name=img-${snapshot_suffix} snapshot-id=${scw_snapshot_id} arch=${arch} public=false zone=fr-par-1
+
+ # scw instance image create name=img-${snapshot_suffix} snapshot-id=${scw_snapshot_id} arch=${arch} public=false zone=fr-par-1
 
 scw block snapshot list
 scw instance image list

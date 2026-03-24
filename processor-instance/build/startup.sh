@@ -133,27 +133,28 @@ if [ `uname -m` -eq "aarch64" ]; then
     cd /root
     rm -rf hstcal
 
-    pip install -r scaleway-dja/processor-instance/build/requirements.txt
-    pip install grizli --no-deps
-
-    # Install from repo
-    pip install git+https://github.com/gbrammer/msaexp.git --upgrade --no-deps
+    cd /tmp/
+    curl -O https://files.pythonhosted.org/packages/10/b6/2ecd1ddebf269aa78103959a99ebb2c2ca9070f392cf10ac767fc4176b2a/photutils-1.12.0.tar.gz
+    tar xzvf photutils-1.12.0.tar.gz
+    cd photutils-1.12.0
+    pip install .
+    cd /root
+    rm -rf /tmp/photutils-1.12*
 
 else
-    pip install grizli[aws,jwst,hst] msaexp
-    pip install git+https://github.com/karllark/dust_attenuation.git
-    pip install python-logging-loki
-
-    pip install grizli[aws,hst,jwst] --upgrade
-
-    # Install from repo
-    pip install git+https://github.com/gbrammer/msaexp.git --upgrade
-
-    pip install jupyter
-
     conda install -c conda-forge hstcal -y
-    
 fi
+
+pip install grizli[aws,jwst,hst] msaexp
+pip install git+https://github.com/karllark/dust_attenuation.git
+pip install python-logging-loki
+
+pip install grizli[aws,hst,jwst] --upgrade
+
+# Install from repo
+pip install git+https://github.com/gbrammer/msaexp.git --upgrade
+
+pip install jupyter
 
 python -c "import eazy; eazy.fetch_eazy_photoz()"
 
@@ -200,10 +201,6 @@ curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/g
 
 # COPY run_msa_tests.py .
 
-# test examples to fetch CRDS environment
-# python app.py --ifu --fixed
-# python app.py --msa --fixed
-#
 # rm /GrizliImaging/crds_cache/references/jwst/nirspec/*fits
 # rm /GrizliImaging/*lock* /GrizliImaging/*nirspec*
 

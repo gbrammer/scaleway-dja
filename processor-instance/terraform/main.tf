@@ -29,16 +29,16 @@ variable "app_process_types" {
   default     = "assoc"
 }
 
-variable "server_image" {
+variable "snapshot_name" {
   type        = string
-  description = "Server image name like 'ubuntu_jammy'"
-  default     = "processor-build0"
+  description = "Block snapshot name"
+  default     = "snap-test-snapshot"
 }
 
 variable "instance_type" {
   type        = string
   description = "Scaleway instance type"
-  default     = "DEV1-L" # vCPU 4GB RAM 0.019
+  default     = "BASIC2-A4C-16G" # vCPU 4GB RAM 0.019
 }
 
 variable "name_prefix" {
@@ -64,8 +64,15 @@ resource "scaleway_instance_ip" "public_ip" {
     for_each = local.instance_names
 }
 
-data "scaleway_instance_image" "server_image" {
-  name = var.server_image
+# Snapshot volume
+data "scaleway_block_snapshot" "snapshot" {
+  name = var.snapshot_name
+}
+
+resource "scaleway_block_volume" "from_snapshot" {
+  snapshot_id = data.scaleway_block_snapshot.snapshot.id
+  iops        = 15000
+  size_in_gb  = var.volume_size
 }
 
 # Security group
@@ -105,7 +112,6 @@ resource "scaleway_instance_server" "this_instance" {
   for_each = local.instance_names
   
   type  = var.instance_type
-  image = data.scaleway_instance_image.server_image.id
 
   ip_id = scaleway_instance_ip.public_ip[each.key].id
 
@@ -118,13 +124,11 @@ resource "scaleway_instance_server" "this_instance" {
   root_volume {
     delete_on_termination = true
     volume_type = "sbs_volume"
-    sbs_iops    = 15000
-    size_in_gb  = var.volume_size
+    volume_id = scaleway_block_volume.from_snapshot.id
   }
 
   user_data = {
     # foo        = "bar"
-    # myfoo = "bar"
     max_process_locks = "${var.max_process_locks}"
     app_process_types = "${var.app_process_types}"
     cloud-init = file("${path.module}/cloud-init.yml")
