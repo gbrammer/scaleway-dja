@@ -17,6 +17,31 @@ variable "instance_count" {
   default     = 1
 }
 
+variable "name_prefix" {
+  type        = string
+  description = "Server name prefix"
+  default     = "worker"
+}
+
+variable "instance_type" {
+  type        = string
+  description = "Scaleway instance type"
+  default     = "BASIC2-A4C-16G" # vCPU 4GB RAM 0.019
+}
+
+variable "snapshot_name" {
+  type        = string
+  description = "Block snapshot name"
+  default     = "snap-grizli-processor5-arm64"
+}
+
+variable "volume_size" {
+  type        = number
+  description = "Size of root volume in gb"
+  default     = 16
+}
+
+# userdata variables
 variable "max_process_locks" {
   type        = number
   description = "Maximum number of process locks"
@@ -27,30 +52,6 @@ variable "app_process_types" {
   type        = string
   description = "Types of app processes to run"
   default     = "assoc"
-}
-
-variable "snapshot_name" {
-  type        = string
-  description = "Block snapshot name"
-  default     = "snap-test-snapshot"
-}
-
-variable "instance_type" {
-  type        = string
-  description = "Scaleway instance type"
-  default     = "BASIC2-A4C-16G" # vCPU 4GB RAM 0.019
-}
-
-variable "name_prefix" {
-  type        = string
-  description = "Server name prefix"
-  default     = "worker"
-}
-
-variable "volume_size" {
-  type        = number
-  description = "Size of root volume in gb"
-  default     = 16
 }
 
 locals {
@@ -70,6 +71,10 @@ data "scaleway_block_snapshot" "snapshot" {
 }
 
 resource "scaleway_block_volume" "from_snapshot" {
+  for_each = local.instance_names
+  
+  name = "${each.value}-block-volume"
+  
   snapshot_id = data.scaleway_block_snapshot.snapshot.id
   iops        = 15000
   size_in_gb  = var.volume_size
@@ -124,7 +129,8 @@ resource "scaleway_instance_server" "this_instance" {
   root_volume {
     delete_on_termination = true
     volume_type = "sbs_volume"
-    volume_id = scaleway_block_volume.from_snapshot.id
+    name = scaleway_block_volume.from_snapshot[each.key].name
+    volume_id = scaleway_block_volume.from_snapshot[each.key].id
   }
 
   user_data = {

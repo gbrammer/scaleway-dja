@@ -6,16 +6,18 @@
 ```bash
 cd $SCWREPO/processor-instance/build
 
-instance_type=GP1-XS        # x86
+instance_type=GP1-XS         # x86
 instance_type=DEV1-XL        # x86
-instance_type=BASIC2-A4C-8G # arm
+instance_type=BASIC2-A4C-8G  # arm
 
 INIT_VARS="-var instance_count=1 -var instance_type=${instance_type} -var server_image=ubuntu_jammy -var name_prefix=build"
+
+echo $INIT_VARS | sed "s/-var/\n -var/g"
 
 terraform plan $INIT_VARS
 terraform apply $INIT_VARS -auto-approve
 
-terraform destroy $INIT_VARS
+terraform destroy $INIT_VARS -auto-approve
 
 ### Run commands in `startup.sh` on the instance
 ../terraform/connect_to_instance.sh

@@ -25,7 +25,6 @@ https://www.scaleway.com/en/docs/instances/reference-content/understanding-diffe
 
 instance_count=1
 
-instance_type=GP1-XS
 max_process_locks=2
 volume_size=16
 
@@ -53,7 +52,7 @@ volume_size=16
 app_process_types=ifu
 
 ### set variable arguments using specifications above
-INIT_VARS="-var instance_count=$instance_count -var max_process_locks=$max_process_locks -var instance_type=${instance_type} -var snapshot_name=${snapshot_name} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var app_process_types=${app_process_types}"
+INIT_VARS="-var instance_count=$instance_count -var instance_type=${instance_type} -var snapshot_name=${snapshot_name} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var max_process_locks=$max_process_locks -var app_process_types=${app_process_types}"
 
 echo $INIT_VARS | sed "s/-var/\n -var/g"
 
