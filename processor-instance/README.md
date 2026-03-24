@@ -4,12 +4,22 @@
 ## Launch processing instances
 
 ```bash
-cd $SCWREPO/processor-instance/terraform
+cd $SCWREPO/processor-instance/terraform/build # initial build
+
+cd $SCWREPO/processor-instance/terraform       # launch from snapshots
+
 ```
  
 ## Set up instances
 
 https://www.scaleway.com/en/pricing/virtual-instances/?zone=fr-par-1
+
+https://www.scaleway.com/en/docs/instances/reference-content/instances-datasheet/
+
+https://www.scaleway.com/en/docs/instances/reference-content/understanding-differences-x86-arm/
+
+**x86**: better software compatibility, perhaps better single-thread performance
+**arm**: cheaper, more energy efficient, scalable
 
 ```bash
 
@@ -59,15 +69,17 @@ terraform destroy $INIT_VARS
 ```bash
 SCWDOCKER=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
 grep -v $SCWDOCKER ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCWDOCKER}
+
 ```
 
-## Jupyter
+## jupyter
+
 ```bash
 ssh -N -f -L 8898:localhost:8888 root@${SCWDOCKER}
 open "https://localhost:8898"
 ```
 
-## flask
+## flask server
 
 ```bash
 open "http://${SCWDOCKER}:8080"
