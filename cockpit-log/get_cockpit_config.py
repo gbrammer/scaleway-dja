@@ -39,7 +39,13 @@ def get_cockpit_config(log_name="my-first-python-logger", verbose=False):
         version="1",
     )
 
-    logger = logging.getLogger("my-first-python-logger")
+    log_formatter = logging.Formatter(
+        "%(name)s - %(levelname)s -  %(message)s"
+    )
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(log_formatter)
+
+    logger = logging.getLogger("my-python-logger")
     logger.addHandler(handler)
         """)
 
