@@ -47,12 +47,6 @@ resource "scaleway_instance_ip" "public_ip" {
     for_each = local.instance_names
 }
 
-resource scaleway_block_volume volume {
-    for_each = local.instance_names
-  iops       = 5000
-  size_in_gb = 16
-}
-
 # Instance
 resource "scaleway_instance_server" "this_instance" {
   
@@ -66,13 +60,14 @@ resource "scaleway_instance_server" "this_instance" {
 
   root_volume {
     delete_on_termination = true
+    volume_type = "sbs_volume"
+    sbs_iops    = 15000
+    size_in_gb  = 12
   }
-
-  additional_volume_ids = [scaleway_block_volume.volume[each.key].id]
 
   user_data = {
     # foo        = "bar"
-    myfoo = "bar"
+    # myfoo = "bar"
     cloud-init = file("${path.module}/cloud-init.yml")
   }
 }
