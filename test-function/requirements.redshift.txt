@@ -14,7 +14,8 @@ jmespath==1.1.0
 kiwisolver==1.5.0
 matplotlib==3.10.8
 # msaexp @ git+https://github.com/gbrammer/msaexp.git@0633cbb2776382f1f46b06688a04f58c33bc626a
-numba==0.64.0
+numba<0.62
+llvmlite==0.44
 numpy==1.26.4
 packaging==26.0
 pandas==3.0.1
