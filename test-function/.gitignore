@@ -1,2 +1,6 @@
-functions.zip
+*.zip
 package/*
+package-*/*
+terraform.tfvars
+venv
+test-env
