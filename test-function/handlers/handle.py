@@ -96,15 +96,23 @@ def check_package():
     Check if `scipy` found in package environment and download
     package extension if not
     """
-    scipy_test = os.path.exists("package/scipy/__init__.py")
-    scipy_test |= os.path.exists("function/package/scipy/__init__.py")
-    
+    #scipy_test = os.path.exists("package/scipy/__init__.py")
+    # scipy_test |= os.path.exists("function/package/scipy/__init__.py")
+    try:
+        import scipy
+        scipy_test = scipy.__version__
+    except ImportError:
+        scipy_test = False
+
     if not scipy_test:
         url = "s3://dja-cloud/function/function_package.zip"
         download_package(url)
     
-    scipy_test = os.path.exists("package/scipy/__init__.py")
-    scipy_test |= os.path.exists("function/package/scipy/__init__.py")
+    try:
+        import scipy
+        scipy_test = scipy.__version__
+    except ImportError:
+        scipy_test = False
 
     return scipy_test
 
@@ -141,7 +149,7 @@ def handle(raw_event, context):
         except ImportError:
             module_versions[module] = None
 
-    # logger.info(json.dumps(module_versions))
+    logger.info(json.dumps(module_versions))
 
     import numpy as np
     import msaexp
@@ -154,6 +162,7 @@ def handle(raw_event, context):
         import eazy
 
         eazy.fetch_eazy_photoz()
+
         if loki_handler is not None:
             for child in [msaexp.cloud.utils, redshift]:
                 child.LOGGER.addHandler(loki_handler)
@@ -210,10 +219,11 @@ if __name__ == "__main__":
         local.serve_handler(handle)
 
     except ImportError:
-        import handle
+        # import handle
+        # from handle import handle
         import logging
         
-        handle.handle(
+        handle(
             {
                 'zfile': 'gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits',
                 'log_level': logging.INFO,
