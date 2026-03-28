@@ -25,7 +25,7 @@ for module in ['numpy','msaexp','grizli','astropy']:
 
 print(module_versions)
 
-os.system('aws s3 ls')
+os.system('aws s3 ls | tail -3')
 
 if '--imports' in sys.argv:
     sys.exit()
