@@ -16,7 +16,7 @@ for subdir in ['package','handlers']:
 
 from importlib import import_module
 module_versions = {}
-for module in ['numpy','msaexp','grizli','astropy']:
+for module in ['numpy','msaexp','grizli','astropy','numba']:
     try:
         mod = import_module(module)
         module_versions[module] = mod.__version__
