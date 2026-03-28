@@ -25,6 +25,13 @@ for module in ['numpy','msaexp','grizli','astropy']:
 
 print(module_versions)
 
+os.system('aws s3 ls')
+
+if '--imports' in sys.argv:
+    sys.exit()
+    
+#######
+
 event = {
     "msacombine": True,
     "root": "gds-barrufet-s156-v4",
