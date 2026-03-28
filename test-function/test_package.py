@@ -27,6 +27,10 @@ print(module_versions)
 
 os.system('aws s3 ls | tail -3')
 
+import eazy
+
+eazy.fetch_eazy_photoz()
+
 if '--imports' in sys.argv:
     sys.exit()
     
