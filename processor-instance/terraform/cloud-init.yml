@@ -35,7 +35,20 @@ write_files:
       git pull
       
       echo "source /root/scaleway-dja/processor-instance/app/bash_extras.sh" >> ~/.bashrc
+
+      # Patch extract2d
+      cat <<EOF > /root/nirspec_2d.patch
+      85c85,88
+      <             new_model, xlo, xhi, ylo, yhi = process_slit(input_model, slit, exp_type)
+      ---
+      >             try:
+      >                 new_model, xlo, xhi, ylo, yhi = process_slit(input_model, slit, exp_type)
+      >             except ValueError:
+      >                 continue
+      EOF
       
+      patch /etc/miniconda/envs/py312/lib/python3.12/site-packages/jwst/extract_2d/nirspec.py /root/nirspec_2d.patch
+
       echo 'Script executed successfully!' >> /run/run_testing.txt
       
     permissions: '0755'
