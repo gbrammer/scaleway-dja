@@ -238,15 +238,16 @@ def process_request():
         
     app.logger.info(f"request args: {json.dumps(request.args)}")
     app.logger.info(f"request data: {request.data}")
+    app.logger.info(f"request form: {request.form}")
     app.logger.info(f"request values: {request.values}")
 
     os.chdir('/GrizliImaging/')
 
     if request.method == 'POST':
-        json_data = json.loads(request.data.replace(b",\n}",b"}"))
+        json_data = json.loads(request.form.replace(b",\n}",b"}"))
 
         if 0:
-            raise ValueError(f'xxx raw request.data: {request.data}')
+            raise ValueError(f'xxx raw request.data: {request.form}')
 
         POST = f'POST: {json_data}'
 
