@@ -13,16 +13,11 @@ terraform apply # -auto-approve
 # Connect to the instance
 
 ```bash
-export SCWDOCKER=`terraform output | grep address | awk '{print $3}' | sed "s/\"//g"`
+./connect_to_instance.sh
 
-## remove potential duplicate from known_hosts
-grep -v $SCWDOCKER ~/.ssh/known_hosts > ~/.ssh/known_hosts
+##### Build the docker image
 
-ssh root@${SCWDOCKER}
-
-## Build the docker image
-
-cd /root/scaleway-dja/docker-instance/ProcessingApp/
+cd /root/scaleway-dja/docker-instance/SpectrumApp/
 
 container_namespace=ns-dja-containers
 docker login rg.fr-par.scw.cloud/${container_namespace} -u nologin # enter SCW_SECRET_KEY
@@ -32,23 +27,25 @@ git pull
 
 docker build -t ${app_tag} .
 
-### Test it
+git pull; docker build -t ${app_tag} .; docker run -it --env-file /root/docker_environment.txt --entrypoint /bin/bash ${app_tag}
+
+##### Test it
 test="""
-    docker run -it --env-file ./.env --entrypoint /bin/bash ${app_tag}
-    python app.py --ifu --fixed
-    python app.py --msa --fixed
-    python app.py --assoc --fixed
-    python app.py --ifu-product --fixed
+    docker run -it --env-file /root/docker_environment.txt --entrypoint /bin/bash ${app_tag}
+
+    python -c "import app; result = app.test_handler_combine()"
+    python -c "import app; result = app.test_handler_redshift()"
+
 """
 
-## Tag and push to container repository
+##### Tag and push to container repository
 docker tag ${app_tag}:latest rg.fr-par.scw.cloud/${container_namespace}/${app_tag}:latest
 
 docker push rg.fr-par.scw.cloud/${container_namespace}/${app_tag}:latest
 
 ```
 
-# eventually tear down
+# Finally tear down
 
 ```bash
 terraform destroy
