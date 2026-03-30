@@ -77,23 +77,24 @@ terraform destroy
 
 curl -X GET "$(terraform output -raw container_endpoint)" -H "X-Auth-Token: $(terraform output -raw secret_key)"
 
+#### One way to launch the function is with URL args
+args="runmode=msa-redshift&zfile=gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits"
+
+curl -X POST "https://$(terraform output -raw container_endpoint)/?${args}&log_level=20" -H "X-Auth-Token: $(terraform output -raw secret_key)"
+
+#### ``POST --data`` doesn't seem to be parsed correctly?
+#### - actually may be OK depending on quote chars
 post_data='{"skey": "value", "ikey": 2, "fkey": 2.0}'
 
-curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-type: application/json" -d '${post_data}'
-
-curl -X POST "$(terraform output -raw container_endpoint)/?arg=value" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-Type: application/json" -d '${post_data}'
-
-curl -X POST "$(terraform output -raw container_endpoint)/?runmode=msa-redshift&zfile=gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-Type: application/json" -d '${post_data}'
+curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-type: application/json" -d "${post_data}" # works
 
 post_data='{"runmode": "msa-redshift", "zfile": "gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits"}'
 
-curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-type: application/json" -d '${post_data}'
-
-curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(terraform output -raw secret_key)" -d '${post_data}'
-
-curl -X GET \
-  "https://nsspeccontainercovbyzxk-test-spec-container.functions.fnc.fr-par.scw.cloud/" \
-  -H "X-Auth-Token: $TOKEN"
-curl -X GET "$(terraform output -raw container_endpoint)" -H "X-Auth-Token: $(terraform output -raw secret_key)"
+curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(terraform output -raw secret_key)" -H "Content-Type: application/json" -d '${post_data}' # wrong
 
 ```
+
+## To Do:
+
+- set up to launch from queue trigger
+- figure out how to get metrics 
