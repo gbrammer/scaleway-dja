@@ -1,7 +1,0 @@
-numpy
-psycopg2-binary
-sqlalchemy
-boto3
-astropy
-sep
-msaexp

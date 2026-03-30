@@ -2,21 +2,55 @@
 import sys
 import os
 import logging
+import glob
 
 logger = logging.getLogger()
 
+package_path = None
+for p in ['function/package', 'package']:
+    if os.path.exists(p):
+        package_path = p
+
+# os.system('pip install awscli')
+
+print(f'package_path: {package_path}')
+
+package_bin = os.path.join(os.getcwd(), package_path, "bin")
+
 path = os.getenv('PATH')
-if 'package/bin' not in path:
-    os.environ['PATH'] += ':' + os.path.join(os.getcwd(), "package/bin")
+if package_bin not in path:
+    os.environ['PATH'] += ':' + package_bin
+
+print(f"$PATH: {os.environ['PATH']}")
 
 for subdir in ['package','handlers']:
-    package_dir = os.path.join(os.getcwd(), subdir)
+    package_dir = os.path.join(
+        os.getcwd(), os.path.dirname(package_path), subdir
+    )
     if package_dir not in sys.path:
         sys.path.append(package_dir)
+
+print(f"sys.path: {sys.path}")
+
+for p in sys.path:
+    file_ = glob.glob(os.path.join(package_path, "eazy"))
+    if len(file_) > 0:
+        print("eazy: ", file_)
+        break
+
+os.system('which python')
+
+os.system('aws s3 ls | tail -3')
+
+if '--pathonly' in sys.argv:
+    sys.exit()
+
+print(f"PWD: {os.getcwd()}")
 
 from importlib import import_module
 module_versions = {}
 for module in ['numpy','msaexp','grizli','astropy','numba']:
+    # mod = import_module(module)
     try:
         mod = import_module(module)
         module_versions[module] = mod.__version__
@@ -24,8 +58,6 @@ for module in ['numpy','msaexp','grizli','astropy','numba']:
         module_versions[module] = None
 
 print(module_versions)
-
-os.system('aws s3 ls | tail -3')
 
 import eazy
 

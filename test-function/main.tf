@@ -76,6 +76,18 @@ variable "COCKPIT_LOG_TOKEN" {
     default = ""
 }
 
+variable "CRDS_PATH" {
+    type = string
+    sensitive = false
+    default = "/home/app/function/package/crds_cache"
+}
+
+variable "CRDS_SERVER_URL" {
+    type = string
+    sensitive = false
+    default = "https://jwst-crds.stsci.edu"
+}
+
 resource "time_rotating" "rotate_after_a_year" {
   rotation_years = 1
 }
@@ -113,12 +125,16 @@ resource "scaleway_function" "private" {
   runtime      = "python312"
   handler      = "handlers/handle.handle"
   privacy      = "private"
-  zip_file     = "handlers.zip"
-  zip_hash     = filesha256("handlers.zip")
+  zip_file     = "package_alpine.zip"
+  zip_hash     = filesha256("package_alpine.zip")
   deploy       = true
   timeout      = 180
   memory_limit = 2048
   # cpu_limit    = 1120
+  environment_variables = {
+      "CRDS_PATH" = "${var.CRDS_PATH}"
+      "CRDS_SERVER_URL" = "${var.CRDS_SERVER_URL}"
+  }
   secret_environment_variables = {
       "DB_HOST" = "${var.DB_HOST}"
       "DB_USER" = "${var.DB_USER}"
