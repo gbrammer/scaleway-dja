@@ -121,7 +121,7 @@ def handle(raw_event, context):
         redshift.LOGGER.setLevel(int(event["log_level"]))
         combine.LOGGER.setLevel(int(event["log_level"]))
         
-    logger.info(f"event: {json.dumps(event)}")
+    app.logger.info(f"event: {json.dumps(event)}")
 
     if event["runmode"] == "msa-redshift":
         obj = db.SQL(f"""
@@ -131,13 +131,13 @@ def handle(raw_event, context):
         
         args = dict(obj[0])
         
-        logger.info(f"{args}")
+        app.logger.info(f"{args}")
         
         res = redshift.handle_nirspec_redshift(
             args, ACL='public-read', clean=False
         )
         
-        logger.info("handle_nirspec_redshift finished")
+        app.logger.info("handle_nirspec_redshift finished")
 
     elif event["runmode"] == "msa-combine":
 
@@ -155,9 +155,11 @@ def handle(raw_event, context):
         for k in ['ctime']:
             args[k] = float(args[k])
 
-        logger.info(f"{args}")
+        app.logger.info(f"{args}")
         
         res = combine.handle_spectrum_extraction(**args)
+
+        app.logger.info("handle_spectrum_extraction finished")
 
     return {
         "statusCode": 200,
