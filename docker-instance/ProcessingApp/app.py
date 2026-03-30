@@ -74,7 +74,7 @@ except:
     loki_handler = None
 
 app.logger.setLevel(logging.DEBUG)
-app.logger.debug(f'has_loki_logger: {has_loki_logger}')
+app.logger.debug(f'has_loki_logger: {loki_handler is not None}')
 app.logger.debug(f'log hash: {THIS_HASH}')
 
 if loki_handler is not None:
@@ -241,7 +241,7 @@ def process_request():
 <body>
 <h1>Hello from Flask on Scaleway Serverless!</h1>
 
-has_loki_logger: {has_loki_logger}
+has_loki_logger: {loki_handler is not None}
 
 module_versions:
 
