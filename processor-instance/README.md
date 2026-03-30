@@ -23,6 +23,8 @@ https://www.scaleway.com/en/docs/instances/reference-content/understanding-diffe
 
 ```bash
 
+name_prefix=worker
+
 instance_count=1
 
 max_process_locks=2
@@ -32,13 +34,18 @@ instance_type=GP1-XS
 instance_type=DEV1-L # 4C / 8G
 snapshot_name=snap-grizli-processor4-x86
 
+app_process_types=another
+
 instance_type=BASIC2-A4C-16G
 snapshot_name=snap-grizli-processor5-arm64
 
-name_prefix=worker
-
 app_process_types=assoc_msa_ifu_ifu-product
 
+instance_count=4
+instance_type=BASIC2-A8C-32G
+max_process_locks=4
+app_process_types=msa
+volume_size=24
 
 instance_count=1
 max_process_locks=3
@@ -51,17 +58,27 @@ max_process_locks=4
 volume_size=16
 app_process_types=ifu
 
-### set variable arguments using specifications above
-INIT_VARS="-var instance_count=$instance_count -var instance_type=${instance_type} -var snapshot_name=${snapshot_name} -var name_prefix=${name_prefix} -var volume_size=${volume_size} -var max_process_locks=$max_process_locks -var app_process_types=${app_process_types}"
+##### set variable arguments using specifications above
+cat <<EOF > $PWD/terraform.tfvars
 
-echo $INIT_VARS | sed "s/-var/\n -var/g"
+instance_count = ${instance_count}
+instance_type = "${instance_type}"
+snapshot_name = "${snapshot_name}"
+name_prefix = "${name_prefix}"
+volume_size = ${volume_size}
+max_process_locks = ${max_process_locks}
+app_process_types = "${app_process_types}"
 
-### send terraform plan and launch instances
-terraform plan $INIT_VARS
-terraform apply $INIT_VARS -auto-approve
+EOF
 
-### shutdown
-terraform destroy $INIT_VARS -auto-approve
+cat terraform.tfvars
+
+##### send terraform plan and launch instances
+terraform plan
+terraform apply -auto-approve
+
+##### shutdown
+terraform destroy -auto-approve
 ```
 
 ## Connect to instance
