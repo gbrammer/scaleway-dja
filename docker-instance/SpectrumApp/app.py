@@ -250,7 +250,7 @@ def process_request():
             try:
                 json_data = json.loads(request.data.replace(b",\n}",b"}"))
             except:
-                json_data = json.dumps(request.args)
+                json_data = request.args
 
         if 0:
             raise ValueError(f'xxx raw request.data: {request.form}')
