@@ -257,7 +257,7 @@ def process_request():
 
         POST = f'POST: {json_data}'
 
-        app.logger.info(f"post data: {json.dumps(json_data)}")
+        # app.logger.info(f"post data: {json.dumps(json_data)}")
         
         if "runmode" in json_data:
             runmode = json_data["runmode"]
