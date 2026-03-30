@@ -260,7 +260,7 @@ def process_request():
         app.logger.info(f"post data: {json.dumps(json_data)}")
         
         if "runmode" in json_data:
-            runmode = json_data.pop("runmode")
+            runmode = json_data["runmode"]
             if runmode in ["msa-redshift", "msa-combine"]:
                 handle(json_data, {})
             elif runmode == "another":
