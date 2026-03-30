@@ -262,7 +262,9 @@ def process_request():
         if "runmode" in json_data:
             runmode = json_data["runmode"]
             if runmode in ["msa-redshift", "msa-combine"]:
-                handle(json_data, {})
+                result = handle(json_data, {})
+                return json.dumps(result)
+
             elif runmode == "another":
                 another_function(**json_data)
             else:
