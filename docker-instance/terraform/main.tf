@@ -13,19 +13,13 @@ provider "scaleway" {
 # Multiple
 locals {
     instance_names = toset([
-        for i in range(4): format("worker%02d", i)
+        for i in range(1): format("worker%02d", i)
     ])
 }
 
 # IP
 resource "scaleway_instance_ip" "public_ip" {
     for_each = local.instance_names
-}
-
-resource scaleway_block_volume volume {
-    for_each = local.instance_names
-  iops       = 5000
-  size_in_gb = 32
 }
 
 # Instance
@@ -41,13 +35,13 @@ resource "scaleway_instance_server" "docker_instance" {
 
   root_volume {
     delete_on_termination = true
+    sbs_iops   = 15000
+    size_in_gb = 32
   }
-
-  additional_volume_ids = [scaleway_block_volume.volume[each.key].id]
 
   user_data = {
     # foo        = "bar"
-    myfoo = "bar"
+    # myfoo = "bar"
     cloud-init = file("${path.module}/cloud-init.yml")
   }
 }
