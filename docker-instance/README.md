@@ -1,6 +1,8 @@
 
 # Make an instance for building Docker apps
 
+Serverless functions and containers run on amd64 architecture.  This folder includes files to setup an instance running the ``docker`` image that can be used to build the environments more efficiently than running docker locally.
+
 ```bash
 cd ${SCWREPO}/docker-instance/terraform
 
