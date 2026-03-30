@@ -65,6 +65,9 @@ COPY initialize_crds.py .
 RUN python initialize_crds.py
 
 COPY app.py .
+
+RUN python -c "import app; app.test_handler()"
+
 # COPY run_msa_tests.py .
 
 # Run test examples to fetch CRDS environment

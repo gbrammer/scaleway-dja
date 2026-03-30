@@ -154,11 +154,11 @@ def handle(raw_event, context):
             result["result"] = {k:res[k] for k in ["file", "z"]}
 
             app.logger.info(
-                "handle_nirspec_redshift: {file} {z:.3f}".format(**res)
+                "handle_nirspec_redshift: {file} z={z:.3f}".format(**res)
             )
         else:
             app.logger.info(
-                "handle_nirspec_redshift: Null"
+                "handle_nirspec_redshift: null"
             )
             
 
@@ -182,7 +182,9 @@ def handle(raw_event, context):
         try:
             xobj, info, status = combine.handle_spectrum_extraction(**args)
             result["result"] = dict(info[0])
-            app.logger.info("handle_spectrum_extraction finished")
+            app.logger.info(
+                "handle_spectrum_extraction: {file}".format(**result["result"])
+            )
             
         except Exception as exc:
             exc_info = sys.exc_info()
@@ -196,7 +198,6 @@ def handle(raw_event, context):
 
     return result
 
-
 def test_handler_combine():
     
     event = {
@@ -209,6 +210,7 @@ def test_handler_combine():
     print(result)
     return result
 
+
 def test_handler_redshift():
 
     event = {
@@ -220,6 +222,13 @@ def test_handler_redshift():
     result = handle(event, {})
     print(result)
     return result
+
+
+def test_handler():
+    
+    test_handler_combine()
+    
+    test_handler_redshift()
 
 
 @app.route('/', methods=["GET", "POST"])
