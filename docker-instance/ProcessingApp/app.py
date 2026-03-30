@@ -14,6 +14,7 @@ from grizli.aws import db
 from grizli import utils
 
 from msaexp.cloud import redshift, combine
+import numpy as np
 
 import logging_loki
 from flask import Flask, request
@@ -115,6 +116,8 @@ def handle(raw_event, context):
     else:
         event = raw_event.copy()
 
+    result = {"event": event}
+
     if "log_level" in event:
         # logger.setLevel(int(event["log_level"]))
         app.logger.setLevel(int(event["log_level"]))
@@ -136,6 +139,10 @@ def handle(raw_event, context):
         res = redshift.handle_nirspec_redshift(
             args, ACL='public-read', clean=False
         )
+        if res is not None:
+            res = dict(res)
+
+        result["result"] = res
         
         app.logger.info("handle_nirspec_redshift finished")
 
@@ -157,20 +164,16 @@ def handle(raw_event, context):
 
         app.logger.info(f"{args}")
         
-        res = combine.handle_spectrum_extraction(**args)
+        xobj, info, status = combine.handle_spectrum_extraction(**args)
+        
+        result["result"] = info
 
         app.logger.info("handle_spectrum_extraction finished")
 
-    return {
-        "statusCode": 200,
-        "body": {
-            "message": "\n".join([
-                f"numpy version: {np.__version__}",
-                f"msaexp version: {msaexp.__version__ } {msaexp.__file__}",
-                f"event: {json.dumps(event)}"
-            ])
-        }
-    }
+    else:
+        result["status"] = None
+
+    return result
 
 
 def test_handler():
@@ -181,15 +184,17 @@ def test_handler():
         "key": "2198_2735"
     }
 
-    handle(event, {})
-
+    result = handle(event, {})
+    print(result)
+    
     event = {
         "runmode": "msa-redshift",
         "zfile": 'gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits',
         "log_level": logging.INFO,
     }
 
-    handle(event, {})
+    result = handle(event, {})
+    print(result)
 
 
 @app.route('/', methods=["GET", "POST"])
