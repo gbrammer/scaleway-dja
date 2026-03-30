@@ -36,7 +36,8 @@ write_files:
       
       echo "source /root/scaleway-dja/processor-instance/app/bash_extras.sh" >> ~/.bashrc
 
-      # Patch extract2d
+      #### Patch extract2d bug
+      
       cat <<EOF > /root/nirspec_2d.patch
       85c85,88
       <             new_model, xlo, xhi, ylo, yhi = process_slit(input_model, slit, exp_type)
