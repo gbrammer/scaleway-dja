@@ -89,7 +89,7 @@ for mod in modules:
     except ImportError:
         module_versions[mod] = None
 
-app.logger.info(f"modules: {json.dumps(module_versions)}")
+# app.logger.info(f"modules: {json.dumps(module_versions)}")
 
 # logger.root.level = logging.DEBUG
 
@@ -141,13 +141,15 @@ def handle(raw_event, context):
             "ACL": "public-read",
             "clean": True,
         }
+
         for k in kwargs:
             if k in event:
                 kwargs[k] = event[k]
 
-        app.logger.info(f"{args}")
-        
+        app.logger.info(f"handle_nirspec_redshift({args}, **{kwargs})")
+
         res = redshift.handle_nirspec_redshift(args, **kwargs)
+
         if res is not None:
             res = dict(res)
 
@@ -177,7 +179,7 @@ def handle(raw_event, context):
         for k in ['ctime']:
             args[k] = float(args[k])
 
-        app.logger.info(f"{args}")
+        app.logger.info(f"handle_spectrum_extraction(**{args})")
         
         try:
             xobj, info, status = combine.handle_spectrum_extraction(**args)
