@@ -13,7 +13,6 @@ import boto3
 from grizli.aws import db
 from grizli import utils
 
-from msaexp.cloud import redshift, combine
 import numpy as np
 
 import logging_loki
@@ -66,29 +65,21 @@ try:
         THIS_HASH + ' - %(name)s - %(levelname)s -  %(message)s'
     )
 
-    handler = logging_loki.LokiHandler(**handler_kwargs)
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(log_formatter)
-    
-    has_loki_logger = True
+    loki_handler = logging_loki.LokiHandler(**handler_kwargs)
+    loki_handler.setLevel(logging.DEBUG)
+    loki_handler.setFormatter(log_formatter)
 
 except:
 
-    has_loki_logger = False
+    loki_handler = None
 
 app.logger.setLevel(logging.DEBUG)
 app.logger.debug(f'has_loki_logger: {has_loki_logger}')
 app.logger.debug(f'log hash: {THIS_HASH}')
 
-if has_loki_logger:
-    app.logger.addHandler(handler)
+if loki_handler is not None:
+    app.logger.addHandler(loki_handler)
     app.logger.setLevel(logging.DEBUG)
-
-    redshift.LOGGER.addHandler(handler)
-    redshift.LOGGER.setLevel(logging.DEBUG)
-
-    combine.LOGGER.addHandler(handler)
-    combine.LOGGER.setLevel(logging.DEBUG)
 
 modules = ['grizli','msaexp','jwst','numpy']
 module_versions = {}
@@ -110,6 +101,15 @@ def handle(raw_event, context):
     import json
     from importlib import import_module
     from grizli.aws import db
+    from msaexp.cloud import redshift, combine
+    
+    if loki_handler is not None:
+        
+        redshift.LOGGER.addHandler(handler)
+        redshift.LOGGER.setLevel(logging.DEBUG)
+
+        combine.LOGGER.addHandler(handler)
+        combine.LOGGER.setLevel(logging.DEBUG)
 
     if "queryStringParameters" in raw_event:
         event = raw_event["queryStringParameters"]
@@ -127,6 +127,7 @@ def handle(raw_event, context):
     app.logger.info(f"event: {json.dumps(event)}")
 
     if event["runmode"] == "msa-redshift":
+        
         obj = db.SQL(f"""
         SELECT * FROM nirspec_redshift_handler
         WHERE file = '{event["zfile"]}'
@@ -149,7 +150,6 @@ def handle(raw_event, context):
     elif event["runmode"] == "msa-combine":
 
         from grizli.aws import db
-        from msaexp.cloud import combine
 
         obj = db.SQL(f"""
         SELECT * FROM nirspec_extractions_helper
@@ -164,11 +164,17 @@ def handle(raw_event, context):
 
         app.logger.info(f"{args}")
         
-        xobj, info, status = combine.handle_spectrum_extraction(**args)
-        
-        result["result"] = info
-
-        app.logger.info("handle_spectrum_extraction finished")
+        try:
+            xobj, info, status = combine.handle_spectrum_extraction(**args)
+            result["result"] = dict(info[0])
+            app.logger.info("handle_spectrum_extraction finished")
+            
+        except Exception as exc:
+            exc_info = sys.exc_info()
+            exc_report = "".join(traceback.format_exception(*exc_info))
+            
+            app.logger.error(exc_report)
+            result["result"] = exc_report
 
     else:
         result["status"] = None
@@ -276,39 +282,7 @@ if __name__ == '__main__':
 
     json_data = {"message": "local_test"}
     
-    if "--ifu" in sys.argv:
-        if "--fixed" in sys.argv:
-            # 15601 jw05766001001_02101_00005_nrs1
-            # 14390 jw06579001001_02101_00001
-
-            json_data["rowid"] = 14390
-
-        run_one_ifu(**json_data)
-
-    elif "--ifu-product" in sys.argv:
-        # prism test cube-03181001001_prism-clear_twa-28
-        json_data["rowid"] = 594
-        run_one_ifu_product(**json_data)
-
-    elif "--msa" in sys.argv:
-        if "--fixed" in sys.argv:
-            json_data["file"] = "jw04866002001_03101_00002_nrs2_rate.fits"
-
-        if "file" not in json_data:
-            rows = db.SQL("select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()")
-            if len(rows) == 0:
-                exit
-            
-            
-        run_one_msa(**json_data)
-
-    elif "--assoc" in sys.argv:
-        if "--fixed" in sys.argv:
-            json_data["assoc_name"] = "j175356p6510_nexus-center-9263-f115w_00634"
-
-        run_one_assoc(**json_data)
-
-    elif "--another" in sys.argv:
+    if "--another" in sys.argv:
 
         another_function(**json_data)
 
