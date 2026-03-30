@@ -176,7 +176,7 @@ def handle(raw_event, context):
     return result
 
 
-def test_handler():
+def test_handler_combine():
     
     event = {
         "runmode": "msa-combine",
@@ -187,6 +187,8 @@ def test_handler():
     result = handle(event, {})
     print(result)
     
+def test_handler_redshift():
+
     event = {
         "runmode": "msa-redshift",
         "zfile": 'gds-barrufet-s156-v4_prism-clear_2198_2735.spec.fits',
