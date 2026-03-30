@@ -245,7 +245,7 @@ def process_request():
 
     if request.method == 'POST':
         try:
-            json_data = request.form
+            json_data = request.json
         except:
             try:
                 json_data = json.loads(request.data.replace(b",\n}",b"}"))
