@@ -134,18 +134,33 @@ def handle(raw_event, context):
         """)
         
         args = dict(obj[0])
-        
+        for k in event:
+            args[k] = event[k]
+
+        kwargs = {
+            "ACL": "public-read",
+            "clean": True,
+        }
+        for k in kwargs:
+            if k in event:
+                kwargs[k] = event[k]
+
         app.logger.info(f"{args}")
         
-        res = redshift.handle_nirspec_redshift(
-            args, ACL='public-read', clean=False
-        )
+        res = redshift.handle_nirspec_redshift(args, **kwargs)
         if res is not None:
             res = dict(res)
 
-        result["result"] = res
-        
-        app.logger.info("handle_nirspec_redshift finished")
+            result["result"] = {k:res[k] for k in ["file", "z"]}
+
+            app.logger.info(
+                "handle_nirspec_redshift: {file} {z:.3f}".format(**res)
+            )
+        else:
+            app.logger.info(
+                "handle_nirspec_redshift: Null"
+            )
+            
 
     elif event["runmode"] == "msa-combine":
 
