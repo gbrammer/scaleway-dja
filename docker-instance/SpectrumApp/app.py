@@ -236,15 +236,21 @@ def test_handler():
 @app.route('/', methods=["GET", "POST"])
 def process_request():
         
-    app.logger.info(f"request args: {json.dumps(request.args)}")
-    app.logger.info(f"request data: {request.data}")
-    app.logger.info(f"request form: {request.json}")
-    app.logger.info(f"request values: {request.values}")
+    #app.logger.info(f"request args: {json.dumps(request.args)}")
+    #app.logger.info(f"request data: {request.data}")
+    # app.logger.info(f"request form: {request.json}")
+    #app.logger.info(f"request values: {request.values}")
 
     os.chdir('/GrizliImaging/')
 
     if request.method == 'POST':
-        json_data = json.loads(request.data.replace(b",\n}",b"}"))
+        try:
+            json_data = request.form
+        except:
+            try:
+                json_data = json.loads(request.data.replace(b",\n}",b"}"))
+            except:
+                json_data = json.dumps(request.args)
 
         if 0:
             raise ValueError(f'xxx raw request.data: {request.form}')
@@ -256,7 +262,7 @@ def process_request():
         if "runmode" in json_data:
             runmode = json_data.pop("runmode")
             if runmode in ["msa-redshift", "msa-combine"]:
-                handle(json_data)
+                handle(json_data, {})
             elif runmode == "another":
                 another_function(**json_data)
             else:
