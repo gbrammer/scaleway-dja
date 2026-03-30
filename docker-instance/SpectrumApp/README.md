@@ -97,4 +97,7 @@ curl -X POST "$(terraform output -raw container_endpoint)/" -H "X-Auth-Token: $(
 ## To Do:
 
 - set up to launch from queue trigger
-- figure out how to get metrics 
+- cache templates for different gratings
+- figure out how to get metrics back for monitoring containers
+- implement fitting at fixed redshift
+
