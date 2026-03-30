@@ -25,7 +25,7 @@ resource "scaleway_instance_ip" "public_ip" {
 resource scaleway_block_volume volume {
     for_each = local.instance_names
   iops       = 5000
-  size_in_gb = 16
+  size_in_gb = 32
 }
 
 # Instance
