@@ -237,6 +237,7 @@ def test_handler():
 def process_request():
         
     app.logger.info(f"request args: {json.dumps(request.args)}")
+    app.logger.info(f"request data: {request.data}")
 
     os.chdir('/GrizliImaging/')
 
