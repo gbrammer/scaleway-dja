@@ -207,7 +207,8 @@ def test_handler_combine():
 
     result = handle(event, {})
     print(result)
-    
+    return result
+
 def test_handler_redshift():
 
     event = {
@@ -218,6 +219,7 @@ def test_handler_redshift():
 
     result = handle(event, {})
     print(result)
+    return result
 
 
 @app.route('/', methods=["GET", "POST"])
