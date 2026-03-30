@@ -105,10 +105,10 @@ def handle(raw_event, context):
     
     if loki_handler is not None:
         
-        redshift.LOGGER.addHandler(handler)
+        redshift.LOGGER.addHandler(loki_handler)
         redshift.LOGGER.setLevel(logging.DEBUG)
 
-        combine.LOGGER.addHandler(handler)
+        combine.LOGGER.addHandler(loki_handler)
         combine.LOGGER.setLevel(logging.DEBUG)
 
     if "queryStringParameters" in raw_event:
