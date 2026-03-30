@@ -17,6 +17,8 @@ def get_logging_handler():
 
     import logging_loki
 
+    # raise ValueError
+    
     def get_hashroot():
         hash_key = secrets.token_urlsafe(16)[:6]
         return hash_key.lower().replace("-", "x")
@@ -50,7 +52,7 @@ def get_logging_handler():
 
 
 logger = logging.getLogger("func")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
 ch.setFormatter(logging.Formatter(" - %(name)s - %(levelname)s -  %(message)s"))
@@ -66,7 +68,7 @@ except:
 logger.info("start")
 
 
-def download_package(url, unzip=True, clean=True):
+def install_dependencies(unzip=True, clean=True):
     """
     Download additional package zipfile
     """
@@ -74,7 +76,9 @@ def download_package(url, unzip=True, clean=True):
     if loki_handler is not None:
         msaexp.cloud.utils.LOGGER.addHandler(loki_handler)
         msaexp.cloud.utils.LOGGER.setLevel(logger.level)
-    
+
+    url = "s3://dja-cloud/function/package_msaexp.zip"
+
     local_file = msaexp.cloud.utils.download_file(
         url,
         env_prefix="SCA_",
@@ -84,37 +88,45 @@ def download_package(url, unzip=True, clean=True):
     logger.info(f"{local_file}: {file_size:.1f}M")
     
     if local_file.endswith('.zip') and unzip:
-        logger.info(f"unzip -o -q {local_file} -d function")
-        os.system(f"unzip -o -q {local_file} -d function")
+        logger.info(f"unzip -o -q {local_file} -d /home/app/function")
+        os.system(f"unzip -o -q {local_file} -d /home/app/function")
         if clean:
             logger.info(f"remove {local_file}")
             os.remove(local_file)
 
+    os.system("cp /home/app/function/package/llvmlite/binding/libLLVM-16.so /usr/lib/libLLVM-16.so")
+
+    logger.info(
+        f"/usr/lib/libLLVM-16.so exists: {os.path.exists('/usr/lib/libLLVM-16.so')}"
+    )
+    
+    logger.info("pip install awscli")
+    os.system("pip install awscli")
+
 
 def check_package():
     """
-    Check if `scipy` found in package environment and download
+    Check if `numba` found in package environment and download
     package extension if not
     """
     #scipy_test = os.path.exists("package/scipy/__init__.py")
     # scipy_test |= os.path.exists("function/package/scipy/__init__.py")
     try:
-        import scipy
-        scipy_test = scipy.__version__
+        import numba
+        import_test = numba.__version__
     except ImportError:
-        scipy_test = False
+        import_test = False
 
-    if not scipy_test:
-        url = "s3://dja-cloud/function/function_package.zip"
-        download_package(url)
+    if not import_test:
+        install_dependencies()
     
     try:
-        import scipy
-        scipy_test = scipy.__version__
+        import numba
+        import_test = numba.__version__
     except ImportError:
-        scipy_test = False
+        import_test = False
 
-    return scipy_test
+    return import_test
 
 
 def handle(raw_event, context):
@@ -182,6 +194,26 @@ def handle(raw_event, context):
         )
         
         logger.info("handle_nirspec_redshift finished")
+
+    if "msacombine" in event:
+
+        from grizli.aws import db
+        from msaexp.cloud import combine
+
+        obj = db.SQL(f"""
+        SELECT * FROM nirspec_extractions_helper
+        WHERE root = '{event["root"]}' AND key = '{event["key"]}'
+        """)
+
+        args = dict(obj[0])
+        for k in ['rowid','status','count']:
+            args[k] = int(args[k])
+        for k in ['ctime']:
+            args[k] = float(args[k])
+
+        logger.info(f"{args}")
+        
+        combine.handle_spectrum_extraction(**args)
         
     return {
         "statusCode": 200,
@@ -197,7 +229,11 @@ def handle(raw_event, context):
 if __name__ == "__main__":
     import sys
     import os
-    
+
+    path = os.getenv('PATH')
+    if 'package/bin' not in path:
+        os.environ['PATH'] += ':' + os.path.join(os.getcwd(), "package/bin")
+
     for subdir in ['package','handlers']:
         package_dir = os.path.join(os.getcwd(), subdir)
         if package_dir not in sys.path:
@@ -205,13 +241,13 @@ if __name__ == "__main__":
 
     from importlib import import_module
     module_versions = {}
-    for module in ['numpy','msaexp','grizli','astropy']:
+    for module in ['numpy','msaexp','grizli','astropy','numba']:
         try:
             mod = import_module(module)
             module_versions[module] = mod.__version__
         except ImportError:
             module_versions[module] = None
-    
+
     print(module_versions)
      
     try:
@@ -230,4 +266,9 @@ if __name__ == "__main__":
             },
             {}
         )
-    
+        
+        event = {
+            "msacombine": True,
+            "root": "gds-barrufet-s156-v4",
+            "key": "2198_2735"
+        }
