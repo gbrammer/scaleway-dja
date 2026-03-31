@@ -13,7 +13,7 @@ provider "scaleway" {
 # Multiple
 locals {
     instance_names = toset([
-        for i in range(1): format("worker%02d", i)
+        for i in range(1): format("docker%02d", i)
     ])
 }
 

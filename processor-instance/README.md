@@ -44,7 +44,7 @@ app_process_types=assoc_msa_ifu_ifu-product
 instance_count=4
 instance_type=BASIC2-A8C-32G
 max_process_locks=4
-app_process_types=msa
+app_process_types=assoc
 volume_size=24
 
 instance_count=1

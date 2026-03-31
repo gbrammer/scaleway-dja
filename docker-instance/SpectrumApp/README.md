@@ -24,12 +24,12 @@ cd /root/scaleway-dja/docker-instance/SpectrumApp/
 container_namespace=ns-dja-app-containers
 
 ##### Create the namespace (on local machine with scw installed)
-
 if test `scw registry namespace list name=${container_namespace} | wc -l` -lt "2"; then
     echo "scw registry namespace create name=${container_namespace} is-public=false region=fr-par"
 else
     echo "Found registry namespace: ${container_namespace}"
 fi
+#####
 
 docker login rg.fr-par.scw.cloud/${container_namespace} -u nologin # enter SCW_SECRET_KEY
 
