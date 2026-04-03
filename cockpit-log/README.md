@@ -1,3 +1,11 @@
+## Initial synchronization
+https://www.scaleway.com/en/docs/cockpit/troubleshooting/synchronize-grafana-data-sources/#solution
+
+```bash
+scw account project list # get project ID
+scw cockpit grafana sync-data-sources project-id=${PROJECT_ID}
+```
+
 ## Generate cockpit data sources and tokens
 
 Console: https://console.scaleway.com/cockpit
