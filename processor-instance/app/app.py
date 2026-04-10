@@ -188,12 +188,12 @@ request args: {json.dumps(request.args)}
     return doc
 
 
-def initialize_with_sleep(**json_data):
+def initialize_with_sleep(tmax=10, **json_data):
     """ """
     import time
     import numpy as np
 
-    sleep_time = 5 + np.random.rand() * 5
+    sleep_time = np.random.rand() * tmax
     app.logger.info(
         f"initialize: {json.dumps(json_data)} + sleep for {sleep_time:.2f} s"
     )
@@ -376,6 +376,8 @@ if __name__ == "__main__":
     # app.run(host='0.0.0.0', port=8080)
 
     json_data = {"message": "local_test"}
+
+    _ = initialize_with_sleep(tmax=5)
 
     #####
     # IFU exposure preprocessing
