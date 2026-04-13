@@ -377,7 +377,7 @@ if __name__ == "__main__":
 
     json_data = {"message": "local_test"}
 
-    _ = initialize_with_sleep(tmax=5)
+    _ = initialize_with_sleep(tmax=16)
 
     #####
     # IFU exposure preprocessing
