@@ -12,6 +12,7 @@ from astropy.visualization import make_lupton_rgb
 import subprocess
 from grizli import utils
 import astropy.io.fits as pyfits
+from astropy.utils.data import download_file
 
 import grizli.jwst_utils
 grizli.jwst_utils.set_quiet_logging()
