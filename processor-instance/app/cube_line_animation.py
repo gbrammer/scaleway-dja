@@ -210,7 +210,12 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
 def run_one(**kwargs):
     row = db.SQL("""
     select outroot, redshift from nirspec_ifu_products
-    where status = 2 and redshift > 4.6 AND grating = 'G395H'
+    where status = 2 AND
+    ( (redshift > 4.6 AND gfilt = 'F290LP_G395H')
+     OR ((gfilt = 'F170LP_G235H')
+         AND redshift > 2.29472843 AND redshift < 5.289936
+     )
+    )
     ORDER BY RANDOM() LIMIT 1
     """)
     if len(row) == 0:
