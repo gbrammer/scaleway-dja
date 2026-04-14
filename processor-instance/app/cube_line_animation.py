@@ -224,7 +224,8 @@ def run_one(**kwargs):
     if len(row) == 0:
         return None
     else:
-        kwargs["outroot"] = row["outroot"]
+        kwargs["outroot"] = row["outroot"][0]
+
         result = make_cube_line_animation(**kwargs)
         return result
 
