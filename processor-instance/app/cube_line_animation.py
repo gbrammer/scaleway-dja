@@ -61,6 +61,7 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     if os.path.exists(local_file):
         cube_hdu = pyfits.open(local_file)
     else:
+        print(f"Download {s3_file}")
         os.system(f"aws s3 cp {s3_file} .")
         cube_hdu = pyfits.open(local_file)
         
@@ -168,8 +169,13 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     # Create the animated GIF using ImageMagick's convert command
     # -delay 10 sets the delay between frames (in 1/100ths of a second)
     # -loop 0 makes the animation loop forever
+    if os.path.exists("/usr/bin/convert"):
+        magick = "convert"
+    else:
+        magick = "magick"
+    
     subprocess.run([
-        "magick", "-delay", "8", "-loop", "0", *png_files, output_gif
+        magick, "-delay", "8", "-loop", "0", *png_files, output_gif
     ])
 
     if sync:
