@@ -143,7 +143,7 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
         if 0:
             ax.imshow(st, cmap='bone_r', vmin=st_percentiles[0], vmax=st_percentiles[1])
         else:
-            ax.imshow(np.log(st + 0.05*st_percentiles[1]), cmap='bone_r', vmin=np.log(st_percentiles[1]*0.03), vmax=np.log(st_percentiles[1]))
+            ax.imshow(np.log(st + 0.05*st_percentiles[1]), cmap='bone_r', vmin=np.log(st_percentiles[1]*0.03), vmax=np.log(st_percentiles[1]), origin='lower')
 
         fig.text(0.99, 0.06 * nx / ny, cube_file, ha='right', va='bottom', transform=fig.transFigure, fontsize=8, color='k', zorder=100,
                  bbox=dict(fc='w', ec='None', alpha=0.8)
