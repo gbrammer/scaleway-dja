@@ -61,7 +61,10 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     if os.path.exists(local_file):
         cube_hdu = pyfits.open(local_file)
     else:
-        cube_hdu = pyfits.open(download_file(FITS_URL, cache=True))
+        os.system(f"aws s3 cp {s3_file} .")
+        cube_hdu = pyfits.open(local_file)
+        
+        # cube_hdu = pyfits.open(download_file(s3_file, cache=True))
 
     cube_wave = utils.GTable(cube_hdu['WCS-TAB'].data)['WAVELENGTH'] / 1.e4
 
