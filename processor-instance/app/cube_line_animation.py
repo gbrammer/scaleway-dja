@@ -1,3 +1,4 @@
+# apt-get install imagemagick -y
 import os
 import sys
 import glob
@@ -46,6 +47,9 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
 
     with open(lockfile, "w") as fp:
         fp.write(time.ctime() + "\n")
+
+    with open("ifu-anim.log.txt", "a") as fp:
+        fp.write(f"{outroot}  {time.ctime()}\n")
 
     local_file = cube_file = outroot + ".fits"
 
