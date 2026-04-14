@@ -440,6 +440,10 @@ if __name__ == "__main__":
         
         run_one_ifu_product(**json_data)
 
+    elif "--ifu-anim" in sys.argv:
+        import cube_line_animation
+        result = cube_line_animation.run_from_args(sys.argv)
+
     #####
     # MSA exposure preprocessing
     #####
