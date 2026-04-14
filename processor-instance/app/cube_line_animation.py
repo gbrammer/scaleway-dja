@@ -123,7 +123,7 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
         ax = axes[0]
         ifill = image / 255.
         ifill[ifill == 0] = np.nan
-        ax.imshow(ifill, cmap=cmap, vmin=0, vmax=1)
+        ax.imshow(ifill, cmap=cmap, vmin=0, vmax=1, origin='lower')
         sh = ifill.shape
         j0 = j/len(irange)*sh[1]
         ysh = sh[0]*0.005
