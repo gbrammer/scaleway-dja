@@ -142,7 +142,7 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
         ax = axes[1]
         
         ax.text(
-            0.01, 0.02, f"z = {row['redshift]:6.4f}",
+            0.01, 0.02, f"z = {row['redshift']:6.4f}",
             ha='left', va='bottom', transform=ax.transAxes, fontsize=10, color='k', zorder=100,
             bbox=dict(fc='w', ec='None', alpha=0.8)
         )
