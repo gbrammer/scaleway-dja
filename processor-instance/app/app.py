@@ -442,7 +442,13 @@ if __name__ == "__main__":
 
     elif "--ifu-anim" in sys.argv:
         import cube_line_animation
-        result = cube_line_animation.run_from_args(sys.argv)
+        if "--all" in sys.argv:
+            result = "start"
+            while result is not None:
+                result = cube_line_animation.run_from_args(sys.argv)
+                print("xxx result", result)
+        else:
+            result = cube_line_animation.run_from_args(sys.argv)
 
     #####
     # MSA exposure preprocessing
