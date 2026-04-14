@@ -48,9 +48,6 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     with open(lockfile, "w") as fp:
         fp.write(time.ctime() + "\n")
 
-    with open("ifu-anim.log.txt", "a") as fp:
-        fp.write(f"{outroot}  {time.ctime()}\n")
-
     local_file = cube_file = outroot + ".fits"
 
     row = db.SQL(f"select * from nirspec_ifu_products where outroot = '{outroot}'")[0]
@@ -58,6 +55,12 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
 
     s3_file = "s3://msaexp-nirspec/ifu_exposures/jw{obsid}/{outroot}.fits".format(**row).replace("%2B","+")
     s3_path = "s3://msaexp-nirspec/ifu_exposures/jw{obsid}/".format(**row).replace("%2B","+")
+
+    with open("ifu-anim.log.txt", "a") as fp:
+        url_ = f"https://s3.amazonaws.com/{s3_path[5:]}{output_gif}".replace(
+            "+", "%2B"
+        )
+        fp.write(f"{outroot}  z={row['redshift']:.3f}  {url_}  {time.ctime()}\n")
 
     print(s3_file)
     print(f"\n{outroot}     z={row['redshift']:.3f}    file exists: {os.path.exists(local_file)}")
