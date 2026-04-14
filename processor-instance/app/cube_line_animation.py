@@ -45,6 +45,9 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
         print(f"lockfile {lockfile} found")
         return None
 
+    if sync:
+        db.execute(f"update nirspec_ifu_products set status = 21 where outroot = '{outroot}'")
+    
     with open(lockfile, "w") as fp:
         fp.write(time.ctime() + "\n")
 
