@@ -56,6 +56,8 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     s3_file = "s3://msaexp-nirspec/ifu_exposures/jw{obsid}/{outroot}.fits".format(**row).replace("%2B","+")
     s3_path = "s3://msaexp-nirspec/ifu_exposures/jw{obsid}/".format(**row).replace("%2B","+")
 
+    output_gif = cube_file.replace(".fits", f".{label}.anim.gif")
+
     with open("ifu-anim.log.txt", "a") as fp:
         url_ = f"https://s3.amazonaws.com/{s3_path[5:]}{output_gif}".replace(
             "+", "%2B"
@@ -85,8 +87,8 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     di = 2
     # s = 0.5
     
-    cube_hdu = pyfits.open(cube_file)
-    cube_wave = utils.GTable(cube_hdu['WCS-TAB'].data)['WAVELENGTH'] / 1.e4
+    # cube_hdu = pyfits.open(cube_file)
+    # cube_wave = utils.GTable(cube_hdu['WCS-TAB'].data)['WAVELENGTH'] / 1.e4
 
     st = np.nanmedian(cube_hdu['SCI'].data[irange[0]-10:irange[-1]+10,:,:], axis=(0))
 
@@ -177,8 +179,6 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
 
     png_files = sorted(glob.glob(f"{outroot}_frame_*.png"))
     png_files.sort()
-
-    output_gif = cube_file.replace(".fits", f".{label}.anim.gif")
 
     # Create the animated GIF using ImageMagick's convert command
     # -delay 10 sets the delay between frames (in 1/100ths of a second)
