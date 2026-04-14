@@ -208,6 +208,9 @@ def make_cube_line_animation(outroot="cube-05645164001_g395h-f290lp_p173+48", re
     return output_gif
 
 def run_one(**kwargs):
+    
+    from grizli.aws import db
+    
     row = db.SQL("""
     select outroot, redshift from nirspec_ifu_products
     where status = 2 AND
