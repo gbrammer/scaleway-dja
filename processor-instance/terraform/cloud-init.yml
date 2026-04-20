@@ -51,7 +51,8 @@ write_files:
       patch /etc/miniconda/envs/py312/lib/python3.12/site-packages/jwst/extract_2d/nirspec.py /root/nirspec_2d.patch
 
       # Upgrade msaexp
-      pip install msaexp --upgrade
+      conda run -n py312 pip install msaexp --upgrade
+      conda run -n py312 python3 -c "import msaexp; print('msaexp: ', msaexp.__version__)" >> /root/runcmd_log.txt
 
       # # install imagemagick for ifu-anim
       # apt-get install imagemagick -y
