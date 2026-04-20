@@ -18,6 +18,22 @@ import numpy as np
 import logging_loki
 from flask import Flask, request
 
+import json
+import numpy as np
+
+class NpEncoder(json.JSONEncoder):
+    """
+    Safe encoder for numpy outputs
+    https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
+    """
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
 
 def get_hashroot():
     hash_key = secrets.token_urlsafe(16)[:6]
@@ -286,13 +302,14 @@ def test_handler_tile():
     return result
 
 
-def test_handler_combine():
+def test_handler_combine(event=None):
 
-    event = {
+    if event is None:
+        event = {
         "runmode": "msa-combine",
         "root": "gds-barrufet-s156-v4",
         "key": "2198_2735",
-    }
+        }
 
     result = handle(event, {})
     print(result)
@@ -349,7 +366,7 @@ def process_request():
             runmode = json_data["runmode"]
             if runmode in ["msa-redshift", "msa-combine"]:
                 result = handle(json_data, {})
-                return json.dumps(result)
+                return json.dumps(result, cls=NpEncoder)
 
             elif runmode == "another":
                 another_function(**json_data)
