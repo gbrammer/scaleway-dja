@@ -456,6 +456,16 @@ if __name__ == "__main__":
         while result is not None:
             result = cube_line_animation.run_from_args(sys.argv)
 
+    elif "--msa-combine" in sys.argv:
+        import container
+        result = container.run_one_combine()
+
+    elif "--msa-combine-all" in sys.argv:
+        import container
+        result = "start"
+        while result is not None:
+            result = container.run_one_combine()
+
     #####
     # MSA exposure preprocessing
     #####
