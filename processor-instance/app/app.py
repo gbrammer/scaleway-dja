@@ -45,6 +45,13 @@ THIS_HASH = f"[{get_hashroot()} {THIS_HOST}]".replace(
 
 DEFAULT_PORT = "8080"
 
+import matplotlib.pyplot as plt
+style_file = "default.mplstyle"
+for path_ in [".", "/root/scaleway-dja/processor-instance/app"]:
+    if os.path.exists(os.path.join(path_, style_file)):
+        plt.style.use(os.path.join(path_, style_file))
+        break
+
 app = Flask(__name__)
 
 try:
