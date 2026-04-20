@@ -317,6 +317,9 @@ def run_one_combine():
     event = dict(event[0])
     event["runmode"] = "msa-combine"
 
+    if os.path.exists("/GrizliImaging"):
+        os.chdir("/GrizliImaging")
+
     lockfile = f"msa_combine_{event['key']}.lock"
     if os.path.exists(lockfile):
         return lockfile
