@@ -37,15 +37,43 @@ scw block volume list
 scw_volume_id=`scw block volume list | tail -1 | awk '{print $1}'`
 
 uname -m      # on instance
-arch=x86_64
+
+ ### arch=x86_64
 arch=arm64
 
-snapshot_suffix=grizli-processor5-${arch}
+snapshot_suffix=grizli-processor6-${arch}
 
 scw block snapshot create ${scw_volume_id} name=snap-${snapshot_suffix} zone=fr-par-1
+
+ ### Copy snapshot to other zones
+ ### https://www.scaleway.com/en/docs/instances/api-cli/snapshot-import-export-feature/
+
+snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
+scw_bucket=xxx
+
+scw block snapshot export-to-object-storage \
+    snapshot-id=${snapshot_id} \
+    bucket=${scw_bucket} \
+    key=snap-${snapshot_suffix}.qcow2 \
+    zone=fr-par-1
+
+ # check for the file
+saws s3 ls ${scw_bucket}/
+
+ # Once the snapshot is ready
+scw block snapshot import-from-object-storage \
+    bucket=${scw_bucket} \
+    key=snap-${snapshot_suffix}.qcow2 \
+    name=snap-${snapshot_suffix} \
+    zone=fr-par-2
+
+"""
+
 ```
 
-### done; don't generate images as below
+# Done!
+
+### The rest was testing.  Don't generate images as below
 
 ```bash
 scw_snapshot_id=`scw block snapshot list | grep ${snapshot_suffix} | awk '{print $1}'`
