@@ -3,7 +3,7 @@
 # apt-get install gcc -y
 # apt-get install curl procps -y
 
-if [ `uname -m` -eq "aarch64" ]; then
+if [ `uname -m` == "aarch64" ]; then
     apt-get install gcc -y
     apt-get install g++ cmake pkg-config libomp-dev zlib1g-dev libcfitsio-dev gfortran -y
 fi
@@ -97,8 +97,42 @@ alias saws="aws --profile scw"
 EOF
 
 ##################
-# Manually add credentials environment vars
+# Add credentials and environment variables
 ##################
+
+cat <<EOF >> /root/setup_environment.sh
+
+export AWS_ACCESS_KEY_ID=xxx
+export AWS_SECRET_ACCESS_KEY=xxx
+
+export SCW_AWS_ACCESS_KEY_ID=xxx
+export SCW_AWS_SECRET_ACCESS_KEY=xxx
+
+export SCA_AWS_ACCESS_KEY_ID=${SCW_AWS_ACCESS_KEY_ID}
+export SCA_AWS_SECRET_ACCESS_KEY=${SCW_AWS_SECRET_ACCESS_KEY}
+
+export DB_HOST=xxx
+export DB_USER=xxx
+export DB_PASS=xxx
+export DB_NAME=xxx
+
+export MAST_TOKEN=xxx
+
+export COCKPIT_LOG_URL=https://xxx.logs.cockpit.fr-par.scw.cloud
+export COCKPIT_API_KEY=xxx
+export COCKPIT_LOG_TOKEN=xxx
+
+EOF
+
+cat <<EOF > /root/.aws/credentials
+[default]
+aws_access_key_id = xxx
+aws_secret_access_key = xxx
+
+[scw]
+aws_access_key_id = xxx
+aws_secret_access_key = xxx
+EOF
 
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
@@ -120,7 +154,7 @@ pip install flask gunicorn
 
 # aarm64
 
-if [ `uname -m` -eq "aarch64" ]; then
+if [ `uname -m` == "aarch64" ]; then
     #### manual build HSTCAL if not in conda
     # https://github.com/spacetelescope/hstcal/blob/main/INSTALL.md
 
@@ -164,6 +198,7 @@ mkdir ssl
 cd ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
 # [bunch of carriage returns]
+
 cd /root/
 
 jupyter notebook password # type password
@@ -194,10 +229,27 @@ python scaleway-dja/processor-instance/build/initialize_crds.py
 # scw cli
 curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
 
-# test examples to fetch CRDS environment
-# python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa --fixed
-# python3 $HOME/scaleway-dja/processor-instance/app/app.py --ifu --fixed
-# python3 $HOME/scaleway-dja/processor-instance/app/app.py --assoc --fixed
+## Helper scripts
+cat <<EOF > /usr/local/bin/gr
+#!/bin/bash
+echo """grep -e " 0 " -e "radec" \\\`ls -ltr */Prep/*wcs.log | awk '{print $9}'\\\`"""
+grep -e " 0 " -e "radec" \`ls -ltr */Prep/*wcs.log  | awk '{print $9}'\`| sed $'s/:/:\t/'; echo "";  ls -ltr */Prep/*fail*
+EOF
+
+cat <<EOF > /usr/local/bin/grs
+#!/bin/bash
+files=\`ls -ltr */Prep/*shifts.log  | awk '{print $9}'\`
+for file in $files; do 
+    ls -lt ${file}
+    grep " 1.000" ${file} | sed -e "s/^/     /"
+    echo ""
+done
+EOF
+
+## test examples to fetch CRDS environment
+# python3 $HOME/scaleway-dja/processor-instance/app/app.py --msa --fixed --nosleep
+# python3 $HOME/scaleway-dja/processor-instance/app/app.py --ifu --fixed --nosleep
+# python3 $HOME/scaleway-dja/processor-instance/app/app.py --assoc --fixed --nosleep
 
 # COPY run_msa_tests.py .
 
