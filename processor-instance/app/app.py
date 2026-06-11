@@ -29,6 +29,10 @@ except ImportError:
 import logging_loki
 from flask import Flask, request
 
+if os.path.exists("/GrizliImaging"):
+    WORKING_DIRECTORY = "/GrizliImaging"
+else:
+    WORKING_DIRECTORY = os.getcwd()
 
 def get_hashroot():
     hash_key = secrets.token_urlsafe(16)[:6]
@@ -138,7 +142,7 @@ def app_root():
 
     app.logger.info(f"request args: {json.dumps(request.args)}")
 
-    os.chdir("/GrizliImaging/")
+    os.chdir(WORKING_DIRECTORY)
 
     if request.method == "POST":
         json_data = json.loads(request.data.replace(b",\n}", b"}"))
@@ -233,7 +237,10 @@ def run_one_ifu(**json_data):
         app.logger.error(f"run_one_preprocess_ifu: 'rowid' not specified")
         return False
 
-    lockfile = os.path.join("/GrizliImaging", "ifu_{rowid}.lock".format(**json_data))
+    lockfile = os.path.join(
+        WORKING_DIRECTORY,
+        "ifu_{rowid}.lock".format(**json_data)
+    )
 
     if os.path.exists(lockfile) & ("force" not in json_data):
         app.logger.critical(f"run_one_preprocess_ifu: {lockfile} found")
@@ -272,7 +279,7 @@ def run_one_ifu_product(**json_data):
         return False
 
     lockfile = os.path.join(
-        "/GrizliImaging", "ifu_product_{rowid}.lock".format(**json_data)
+        WORKING_DIRECTORY, "ifu_product_{rowid}.lock".format(**json_data)
     )
 
     if os.path.exists(lockfile) & ("force" not in json_data):
@@ -309,7 +316,8 @@ def run_one_msa(**json_data):
         return False
 
     lockfile = os.path.join(
-        "/GrizliImaging", "msa_" + json_data["file"].replace("rate.fits", "rate.lock")
+        WORKING_DIRECTORY,
+        "msa_" + json_data["file"].replace("rate.fits", "rate.lock")
     )
 
     if os.path.exists(lockfile) & ("force" not in json_data):
@@ -356,7 +364,7 @@ def run_one_assoc(**json_data):
 
     assoc = json_data.pop("assoc_name")
 
-    lockfile = os.path.join("/GrizliImaging", f"assoc_{assoc}.lock")
+    lockfile = os.path.join(WORKING_DIRECTORY, f"assoc_{assoc}.lock")
 
     if os.path.exists(lockfile) & ("force" not in json_data):
         app.logger.critical(f"run_one_assoc: {lockfile} found")
@@ -402,7 +410,7 @@ if __name__ == "__main__":
             )
 
             finished_file = os.path.join(
-                "/GrizliImaging", "ifu_finished.txt"
+                WORKING_DIRECTORY, "ifu_finished.txt"
             )
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
@@ -432,7 +440,7 @@ if __name__ == "__main__":
             )
 
             finished_file = os.path.join(
-                "/GrizliImaging", "ifu-products_finished.txt"
+                WORKING_DIRECTORY, "ifu-products_finished.txt"
             )
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
@@ -487,7 +495,7 @@ if __name__ == "__main__":
             )
 
             finished_file = os.path.join(
-                "/GrizliImaging", "msa_finished.txt"
+                WORKING_DIRECTORY, "msa_finished.txt"
             )
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
@@ -516,7 +524,7 @@ if __name__ == "__main__":
             )
 
             finished_file = os.path.join(
-                "/GrizliImaging", "assoc_finished.txt"
+                WORKING_DIRECTORY, "assoc_finished.txt"
             )
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
