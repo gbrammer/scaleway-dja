@@ -19,24 +19,12 @@ terraform apply $INIT_VARS -auto-approve
 
 terraform destroy $INIT_VARS -auto-approve
 
-### Run commands in `startup.sh` on the instance
+### Connect to the instance
 ../terraform/connect_to_instance.sh
 
-### Set local environment variables
-cat <<EOF >> /root/setup_environment.sh
+#### Build the environment
 
-export DB_HOST=xxx
-export DB_USER=xxx
-export DB_PASS=xxx
-export DB_NAME=xxx
-
-export MAST_TOKEN=xxxxxxxx
-
-export COCKPIT_LOG_URL=https://xxx.logs.cockpit.fr-par.scw.cloud
-export COCKPIT_LOG_TOKEN=xxx
-export COCKPIT_API_KEY=xxxxxxxxxx
-
-EOF
+Paste commands from [startup.sh](startup.sh) into the remote terminal.
 
 ### On local machine, create a snapshot+image with the scaleway CLI
 
