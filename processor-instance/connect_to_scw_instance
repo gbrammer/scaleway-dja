@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    name="worker00"
+else
+    name=$1
+fi
+
+# echo "Count: $#, Instance: $i, $i0"
+
+if [ $name == "list" ]; then
+    scw instance server list
+else
+    ip=`scw instance server list name=${name} | grep $name | awk '{print $6}'`
+    echo "Connect to instance $name @ $ip"
+
+    if [ "$2" == "" ]; then
+        grep -v ${ip} /Users/gbrammer/.ssh/known_hosts > /tmp/known_hosts.x
+        mv /tmp/known_hosts.x /Users/gbrammer/.ssh/known_hosts
+
+        ssh -i ~/.ssh/id_ed25519 root@${ip}
+
+    else
+        echo "Notebook port: $2"
+
+        grep -v ${ip} /Users/gbrammer/.ssh/known_hosts > /tmp/known_hosts.x
+        mv /tmp/known_hosts.x /Users/gbrammer/.ssh/known_hosts
+
+        ssh -N -f -L ${2}:localhost:8888 root@${ip}
+        echo "open \"https://localhost:${2}\""
+
+    fi
+fi
+
+# {"worker00":[{"address":"163.172.137.30","dynamic":false,"family":"inet","gateway":"62.210.0.1","id":"fr-par-1/708cd6bc-24a4-4f6b-97b2-0e3e4ad5c9af","netmask":"32","provisioning_mode":"dhcp"}]}

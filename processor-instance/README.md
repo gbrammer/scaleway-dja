@@ -23,84 +23,49 @@ https://www.scaleway.com/en/docs/instances/reference-content/instances-datasheet
 https://www.scaleway.com/en/docs/instances/reference-content/understanding-differences-x86-arm/
 
 - **x86**: better software compatibility, perhaps better single-thread performance
-- **arm**: cheaper, more energy efficient, scalable
+- **arm**: cheaper, more energy efficient, scalable (e.g., ``BASIC2-A8C-32G``)
 
 ```bash
 
-name_prefix=worker
+cd $SCWREPO/processor-instance/terraform
 
-instance_count=1
+##### set variable arguments
 
-max_process_locks=2
-volume_size=16
+cat <<EOF > $PWD/thisrun.tfvars
 
-instance_type=GP1-XS
-instance_type=DEV1-L # 4C / 8G
-snapshot_name=snap-grizli-processor4-x86
-
-app_process_types=another
-
-instance_type=BASIC2-A4C-16G
-snapshot_name=snap-grizli-processor5-arm64
-
-app_process_types=assoc_msa_ifu_ifu-product
-
-instance_count=4
-instance_type=BASIC2-A8C-32G
-max_process_locks=4
-app_process_types=assoc
-volume_size=24
-
-instance_count=1
-max_process_locks=3
-volume_size=18
-app_process_types=ifu-product
-
-
-instance_count=4
-max_process_locks=4
-volume_size=16
-app_process_types=ifu
-
-##### set variable arguments using specifications above
-cat <<EOF > $PWD/terraform.tfvars
-
-instance_count = ${instance_count}
-instance_type = "${instance_type}"
-snapshot_name = "${snapshot_name}"
-name_prefix = "${name_prefix}"
-volume_size = ${volume_size}
-max_process_locks = ${max_process_locks}
-app_process_types = "${app_process_types}"
+instance_count = 1
+instance_type = "BASIC2-A8C-32G"
+snapshot_name = "snap-grizli-processor6-arm64"
+name_prefix = "worker"
+volume_size = 24
+max_process_locks = 1
+app_process_types = "assoc"
 
 EOF
 
-cat terraform.tfvars
+cat thisrun.tfvars
 
-##### send terraform plan and launch instances
-terraform plan
-terraform apply -auto-approve
+##### send terraform plan to launch instances
+terraform plan -var-file thisrun.tfvars
+terraform apply -auto-approve -var-file thisrun.tfvars
 
 ##### shutdown
-terraform destroy -auto-approve
+terraform destroy -auto-approve -var-file thisrun.tfvars
 ```
 
 ## Connect to instance
 
 ```bash
-SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
-grep -v $SCW_INSTANCE_IP ~/.ssh/known_hosts > /tmp/hosts; mv /tmp/hosts ~/.ssh/known_hosts; ssh root@${SCW_INSTANCE_IP}
-
-./connect_to_instance.sh  #  script with the above lines
+##### in $SCWREPO/processor-instance/terraform
+../connect_to_scw_instance worker00
 ```
 
 ## jupyter
 
+Connect to the instance and launch the jupyter server.  Then run the following to map the remote port to a local port, e.g., ``8898``.
+
 ```bash
-SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
-
-ssh -N -f -L 8898:localhost:8888 root@${SCW_INSTANCE_IP}
-
+../connect_to_scw_instance worker00 8898
 open "https://localhost:8898"
 ```
 
