@@ -3,10 +3,14 @@
 
 ## Launch processing instances
 
-```bash
-cd $SCWREPO/processor-instance/terraform/build # initial build
+1. [Build](build) the environment
+2. [Launch](terraform) from snapshots
 
-cd $SCWREPO/processor-instance/terraform       # launch from snapshots
+```bash
+
+cd $SCWREPO/processor-instance/build      # build the environment
+
+cd $SCWREPO/processor-instance/terraform  # launch from snapshots
 
 ```
  
