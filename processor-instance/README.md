@@ -55,6 +55,9 @@ terraform destroy -auto-approve -var-file thisrun.tfvars
 
 ## Connect to instance
 
+Helper script to get the instance IP and launch an ssh connection:
+[connect_to_scw_instance](connect_to_scw_instance).
+
 ```bash
 ##### in $SCWREPO/processor-instance/terraform
 ../connect_to_scw_instance worker00
