@@ -60,6 +60,11 @@ Helper script to get the instance IP and launch an ssh connection:
 
 ```bash
 ##### in $SCWREPO/processor-instance/terraform
+
+##### list instances
+../connect_to_scw_instance list
+
+##### ssh connection
 ../connect_to_scw_instance worker00
 ```
 
