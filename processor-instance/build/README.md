@@ -3,6 +3,8 @@
 
 ## Build the environment
 
+### Create a new base instance
+
 ```bash
 cd $SCWREPO/processor-instance/build
 
@@ -27,7 +29,7 @@ terraform destroy $INIT_VARS -auto-approve
 
 #### Build the environment
 
-Paste commands from [startup.sh](startup.sh) into the remote terminal.
+Paste commands from [startup.sh](startup.sh) into the remote terminal.  There's probably a better way to do this automatically....
 
 ### On local machine, create a snapshot+image with the scaleway CLI
 
