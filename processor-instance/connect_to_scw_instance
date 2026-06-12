@@ -32,4 +32,3 @@ else
     fi
 fi
 
-# {"worker00":[{"address":"163.172.137.30","dynamic":false,"family":"inet","gateway":"62.210.0.1","id":"fr-par-1/708cd6bc-24a4-4f6b-97b2-0e3e4ad5c9af","netmask":"32","provisioning_mode":"dhcp"}]}
