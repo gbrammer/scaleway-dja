@@ -68,9 +68,10 @@ Helper script to get the instance IP and launch an ssh connection:
 ../connect_to_scw_instance worker00
 ```
 
-## jupyter
+## Jupyter
 
-Connect to the instance and launch the jupyter server.  Then run the following to map the remote port to a local port, e.g., ``8898``.
+1. Connect to the instance with the command above and launch the jupyter server (``$ launch_labserver``).
+2. Run the following locally to map the remote jupyterlab port (8888) to a local port, e.g., 8898.
 
 ```bash
 ../connect_to_scw_instance worker00 8898
@@ -78,6 +79,8 @@ open "https://localhost:8898"
 ```
 
 ## flask server
+
+*(To be updated.)*
 
 ```bash
 SCW_INSTANCE_IP=`terraform output | grep address | head -1 | awk '{print $3}' | sed "s/\"//g"`
