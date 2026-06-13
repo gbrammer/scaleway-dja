@@ -1,35 +1,36 @@
 
 # Manage instances with terraform
 
-## Launch processing instances
-
-1. [Build](build) the environment
-2. [Launch](terraform) from snapshots
-
-```bash
-
-cd $SCWREPO/processor-instance/build      # build the environment
-
-cd $SCWREPO/processor-instance/terraform  # launch from snapshots
-
-```
- 
-## Set up instances
-
 https://www.scaleway.com/en/pricing/virtual-instances/?zone=fr-par-1
 
 https://www.scaleway.com/en/docs/instances/reference-content/instances-datasheet/
 
 https://www.scaleway.com/en/docs/instances/reference-content/understanding-differences-x86-arm/
 
+Instance architectures:
+
 - **x86**: better software compatibility, perhaps better single-thread performance
 - **arm**: cheaper, more energy efficient, scalable (e.g., ``BASIC2-A8C-32G``)
 
+The bulid scripts below currently only use **arm** instances.
+
+## Set up  instance environment
+
+See [Build](build).
+
+```bash
+cd $SCWREPO/processor-instance/build  # build the environment
+```
+ 
+## Launch instances
+
+[Launch](terraform) from snapshots created in [Build](build):
+
 ```bash
 
-cd $SCWREPO/processor-instance/terraform
+cd $SCWREPO/processor-instance/terraform  # launch from here
 
-##### set variable arguments
+##### set variable arguments to override defaults in terraform/main.tf
 
 cat <<EOF > $PWD/thisrun.tfvars
 
