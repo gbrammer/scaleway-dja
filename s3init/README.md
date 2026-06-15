@@ -6,7 +6,7 @@ pip install awscli
 
 Instructions at https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/.
 
-For a profile named `$PROFILE` stored in the credentals file, put the following in `~/.aws/config`, which can live alongside other AWS profiles:
+For a profile named `$PROFILE` stored in the `~/.aws/credentals` file, put the following in `~/.aws/config`, which can live alongside other AWS profiles:
 
 ```bash
 [profile $PROFILE]
