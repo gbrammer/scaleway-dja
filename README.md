@@ -37,7 +37,7 @@ brew install hashicorp/tap/packer
 
 ## Set up `awscli` for object storage
 
-Scaleway object storage is compatible with the `awscli` command-line tools, e.g., `aws s3 ls ${BUCKET}/{file}`.  See the setup information in [./s3init](s3init).
+Scaleway object storage is compatible with the `awscli` command-line tools, e.g., `aws s3 ls ${BUCKET}/{file}`.  See the setup information in [s3init](s3init).
 
 
 ## Set up cockpit logs
@@ -45,4 +45,9 @@ Scaleway object storage is compatible with the `awscli` command-line tools, e.g.
 See [cockpit-log](cockpit-log).
 
 (Probably only has to be run once when initializing the Project.)
+
+## processor-instance
+
+This is the main tool for setting up a grizli + msaexp processing environment on Scaleway compute instances.  See [processor-instance](processor-instance).
+
 

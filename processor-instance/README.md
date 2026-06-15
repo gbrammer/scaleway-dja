@@ -16,7 +16,7 @@ The bulid scripts below currently only use **arm** instances.
 
 ## Set up  instance environment
 
-See [Build](build).
+Install grizli, msaexp, etc. on a Scaleway instance and save a snapshot for generating runner instances.  See [Build](build).
 
 ```bash
 cd $SCWREPO/processor-instance/build  # build the environment
