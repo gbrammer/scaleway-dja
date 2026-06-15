@@ -22,6 +22,7 @@ terraform apply -auto-approve
 ### Record tokens and API keys for use in instances, apps
 
 ```bash
+# pip install python-logging-loki
 python get_cockpit_config.py
 ```
 

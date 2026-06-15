@@ -35,4 +35,14 @@ brew install hashicorp/tap/packer
 
 ```
 
-## 
+## Set up `awscli` for object storage
+
+Scaleway object storage is compatible with the `awscli` command-line tools, e.g., `aws s3 ls ${BUCKET}/{file}`.  See the setup information in [./s3init](s3init).
+
+
+## Set up cockpit logs
+
+See [cockpit-log](cockpit-log).
+
+(Probably only has to be run once when initializing the Project.)
+

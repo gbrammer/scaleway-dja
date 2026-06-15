@@ -29,8 +29,16 @@ Add a BASH alias to the `awscli --profile` (in `~/.bashrc`):
 
 ```bash
 $ alias saws="aws --profile $PROFILE"
+```
 
-# then
+Then you should be able to run, e.g.,
+
+```bash
 $ saws s3 ls
 2026-03-18 09:39:25 dja-cloud
+
+$ saws s3 ls s3://dja-cloud/scratch
+                           PRE grism/
+2026-03-18 10:39:52         29 date.txt
+2026-03-26 12:37:25         29 junk.txt
 ```
