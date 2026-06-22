@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Wrapper around db_processing_status.py to show *differences*
+
+suppress="--suppress-common-lines"
+update=0
+do_diff=1
+args=""
+
+for var in "$@"; do
+    # echo "var: $var"
+
+    if [ $var == "--all" ]; then
+        suppress=""
+    elif [ $var == "--nodiff" ]; then
+        do_diff=0
+    elif [ $var == "--update" ]; then
+        update=1
+    elif [ $var == "--help" ]; then
+        echo "Usage: db_processing_status [mode] --all --update --nodiff"
+        exit
+    elif [[ ! $var =~ "--" ]]; then
+           mode="${var}"
+    else
+        args="${args} ${var}"
+    fi
+done
+
+# mode=$1
+
+echo "# args: ${args}, mode: ${mode}"
+
+db_processing_status.py --only ${mode} ${args} > /tmp/${mode}_this.txt
+
+if [ $do_diff -eq 1 ]; then
+    if [ -e "/tmp/${mode}_prev.txt" ]; then
+        diff -y -W 200 $suppress /tmp/${mode}_prev.txt /tmp/${mode}_this.txt
+    else
+        cat /tmp/${mode}_this.txt
+    fi
+else
+    cat /tmp/${mode}_this.txt
+fi
+
+if [ $update -eq 1 ]; then
+    cp /tmp/${mode}_this.txt /tmp/${mode}_prev.txt
+elif [ ! -e "/tmp/${mode}_prev.txt" ]; then
+    cp /tmp/${mode}_this.txt /tmp/${mode}_prev.txt
+fi    

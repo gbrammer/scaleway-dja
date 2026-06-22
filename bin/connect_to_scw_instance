@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Get IP address of a scaleway instance and open an SSH connection to it
+
+# Usage:
+#
+#   # list instance names
+#   connect_to_scw_instance list
+#
+#   # Connect to a particular instance by name
+#   connect_to_scw_instance worker00
+#
+#   # Map jupyter port=8888 on remote instance to a local port
+#   connect_to_scw_instance worker00 8889
+
+if [ $# -eq 0 ]; then
+    name="worker00"
+else
+    name=$1
+fi
+
+# echo "Count: $#, Instance: $i, $i0"
+
+if [ $name == "list" ]; then
+    scw instance server list
+else
+    ip=`scw instance server list name=${name} | grep $name | awk '{print $6}'`
+    echo "Connect to instance $name @ $ip"
+
+    if [ "$2" == "" ]; then
+        grep -v ${ip} ${HOME}/.ssh/known_hosts > /tmp/known_hosts.x
+        mv /tmp/known_hosts.x ${HOME}/.ssh/known_hosts
+
+        ssh -i ~/.ssh/id_ed25519 root@${ip}
+
+    else
+        echo "Notebook port: $2"
+
+        grep -v ${ip} ${HOME}/.ssh/known_hosts > /tmp/known_hosts.x
+        mv /tmp/known_hosts.x ${HOME}/.ssh/known_hosts
+
+        ssh -N -f -L ${2}:localhost:8888 root@${ip}
+        echo "open \"https://localhost:${2}\""
+
+    fi
+fi
