@@ -344,7 +344,7 @@ def run_one_assoc(**json_data):
     """
 
     # Catch flats updated 2025-02-18
-    os.environ['CRDS_CONTEXT'] = "jwst_1401.pmap"
+    # os.environ['CRDS_CONTEXT'] = "jwst_1401.pmap"
 
     if "sync" not in json_data:
         json_data["sync"] = True
