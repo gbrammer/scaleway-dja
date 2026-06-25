@@ -343,6 +343,9 @@ def run_one_assoc(**json_data):
     Run a file with status = 0
     """
 
+    # Match AWS EC2
+    os.environ['CRDS_CONTEXT'] = "jwst_1293.pmap"
+
     # Catch flats updated 2025-02-18
     # os.environ['CRDS_CONTEXT'] = "jwst_1401.pmap"
 
