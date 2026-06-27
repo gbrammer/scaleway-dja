@@ -26,6 +26,8 @@ try:
 except ImportError:
     visit_processor = None
 
+import run_one_fixed_slit
+
 import logging_loki
 from flask import Flask, request
 
@@ -516,6 +518,47 @@ if __name__ == "__main__":
             json_data["file"] = rows["rate_file"][0]
 
         run_one_msa(**json_data)
+
+    #####
+    # NIRSpec fixed slit
+    #####
+    elif "--fs" in sys.argv:
+        if "--fixed" in sys.argv:
+            json_data["clean"] = False
+
+            json_data["row"] = {
+                'obsid': '06133005001',
+                'version': 'v4',
+                'observed_time': 1747998172.303,
+                'release_time': 1779560508.0,
+                'ctime': 1753438612.140117,
+                'status': 70,
+                'query_yaml': 'filter: null\ngrating: null\ntrim_prism_nrs2: true\n',
+                'extract_yaml': '',
+                'rowid': 386
+            }
+
+        if "row" not in json_data:
+            rows = db.SQL(
+                "select * from nirspec_fs_helper where status = 0 ORDER BY RANDOM() LIMIT 1"
+            )
+
+            finished_file = os.path.join(
+                WORKING_DIRECTORY, "fs_finished.txt"
+            )
+            if len(rows) == 0:
+                with open(finished_file, "a") as fp:
+                    fp.write(time.ctime() + "\n")
+
+                print("Nothing to do for preprocess_nirspec fs")
+                sys.exit()
+            else:
+                if os.path.exists(finished_file):
+                    os.remove(finished_file)
+
+            json_data["row"] = dict(rows[0])
+
+        run_one_fixed_slit.run_one_fixed_slit(**json_data)
 
     #####
     # Imaging association
