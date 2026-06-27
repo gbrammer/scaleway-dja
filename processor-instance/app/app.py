@@ -221,6 +221,24 @@ def another_function(**json_data):
     app.logger.info(f"another_function: {json.dumps(json_data)}")
 
 
+def run_one_fs(**json_data):
+    """
+    Run a FS object
+    """
+    rowid = json_data["row"]["rowid"]
+    lockfile = os.path.join(WORKING_DIRECTORY, f"fs_{rowid}.lock")
+
+    if os.path.exists(lockfile) & ("force" not in json_data):
+        app.logger.critical(f"run_one_fixed_slit: {lockfile} found")
+        return False
+
+    with open(lockfile, "w") as fp:
+        fp.write(time.ctime() + "\n")
+
+    run_one_fixed_slit.run_one_fixed_slit(**json_data)
+    os.remove(lockfile)
+
+
 def run_one_ifu(**json_data):
     """
     Run a file with status = 0
@@ -558,7 +576,7 @@ if __name__ == "__main__":
 
             json_data["row"] = dict(rows[0])
 
-        run_one_fixed_slit.run_one_fixed_slit(**json_data)
+        run_one_fs(**json_data)
 
     #####
     # Imaging association
