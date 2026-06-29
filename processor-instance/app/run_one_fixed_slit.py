@@ -9,6 +9,7 @@ import yaml
 import time
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from grizli.aws import db
 import grizli.utils
@@ -95,10 +96,10 @@ def run_one_fixed_slit(row=None, clean=True, **kwargs):
     for k in row:
         if "time" in k:
             row[k] = float(row[k])
-    row['rowid'] = int(row['rowid'])
+    row["rowid"] = int(row["rowid"])
 
     for k in list(row.keys()):
-        if 'yaml' in k:
+        if "yaml" in k:
             _ = row.pop(k)
 
     print(yaml.dump(row))
@@ -170,6 +171,53 @@ def run_one_fixed_slit(row=None, clean=True, **kwargs):
         for file in files:
             print(f"rm {file}")
             os.remove(file)
+
+
+def get_sky_from_other_slits(files, corr_max=5, df=32, minmax=(0.7, 5.4), **kwargs):
+    """ """
+    import jwst.datamodels
+
+    raw_data = []
+    raw_err = []
+    raw_wave = []
+
+    for f in files:
+        with jwst.datamodels.open(f) as dm:
+
+            valid = (dm.dq & 1) == 0
+
+            cal_ = utils.slit_extended_flux_calibration(dm, **kwargs)
+            valid &= dm.phot_corr > 0
+            valid &= dm.phot_corr < dm.phot_corr[valid].min() * corr_max
+            valid &= np.isfinite((dm.data + dm.err) * dm.phot_corr)
+
+            k = "{grating}-{filter}".format(**dm.meta.instrument.instance)
+
+            sn = dm.data / dm.err
+            med_sn = np.nanmedian(sn[valid])
+            valid &= (sn > -4) & (sn < 7 * med_sn)
+
+            raw_wave.append(dm.wavelength[valid])
+            raw_data.append((dm.data * dm.phot_corr)[valid])
+            raw_err.append((dm.err * dm.phot_corr)[valid])
+
+    raw_wave = np.hstack(raw_wave)
+    raw_data = np.hstack(raw_data)
+    raw_err = np.hstack(raw_err)
+
+    bspl = grizli.utils.bspline_templates(
+        raw_wave, df=df, minmax=minmax, get_matrix=True
+    )
+
+    mwave = np.linspace(*minmax, 1024)
+    mbspl = grizli.utils.bspline_templates(mwave, df=df, minmax=minmax, get_matrix=True)
+
+    c = np.linalg.lstsq((bspl.T / raw_err).T, (raw_data / raw_err), rcond=None)
+    sky_model = mbspl.dot(c[0])
+    sky_mask = mwave > 0
+    sky_mask[np.interp(raw_wave, mwave, np.arange(1024)).astype(int)] = False
+
+    return mwave, np.nan**sky_mask * sky_model
 
 
 def reduce_fixed_slit_obsid(
@@ -260,15 +308,26 @@ def reduce_fixed_slit_obsid(
     # Combined spectra
     # slit_files = glob.glob(f"jw{obsid}*{res['apername'][0].split('_')[1].lower()}.fits")
     slit_files = []
+    other_slit_files = []
+
+    other_s200 = {
+        "s200a1": "s200a2",
+        "s200a2": "s200a1",
+    }
+
     for row in res:
         slit = row["apername"].split("_")[1].lower()
         prefix = "_".join(row["filename"].split("_")[:4])
-        slit_files += glob.glob(f"{prefix}*{slit}.fits")
+        files_i = glob.glob(f"{prefix}*{slit}.fits")
+        slit_files += files_i
+        if slit in other_s200:
+            other_slit_files += [f.replace(slit, other_s200[slit]) for f in files_i]
 
     slit_files.sort()
+    other_slit_files.sort()
 
     exposure_groups = slit_combine.split_visit_groups(
-        slit_files, gratings=slit_combine.SPLINE_BAR_GRATINGS
+        slit_files, join=[0, 1, 3, 5], gratings=slit_combine.SPLINE_BAR_GRATINGS
     )
 
     for g in list(exposure_groups.keys()):
@@ -286,24 +345,27 @@ def reduce_fixed_slit_obsid(
 
             _ = exposure_groups.pop(g)
 
-    # kwargs = dict(
-    #     files=slit_files,
-    #     # initial_theta=[0.5, 0.0, 0.0][:2],
-    #     recenter_all=((recenter_type & 1) > 0),
-    #     free_trace_offset=((recenter_type & 2) > 0),
-    #     # extended_calibration_kwargs=None,
-    #     exposure_groups=exposure_groups,
-    #     # flag_trace_kwargs={"yslit": [-5, -1]},
-    #     # shutter_offset=-3.0,
-    #     # initial_theta=[2, 0, 0.], fit_params_kwargs={},
-    #     # diffs=False, fix_params=True, initial_theta=[80, 0.0], fit_params_kwargs={},
-    #     # fit_params_kwargs={},
-    #     # sky_arrays=(sp['wave'], stat.statistic*2),
-    #     # estimate_sky_kwargs={"make_plot": True, "high_clip": 100, "df":101, "mask_yslit": [[-4, 4], [12,118]]}, diffs=False,
-    #     # diffs=True,
-    #     protect_exception=False,
-    #     do_gratings=["PRISM", "G395H", "G395M", "G235M", "G140M","G235H","G140H"],
-    # )
+    if len(other_slit_files) > 0:
+        other_exposure_groups = slit_combine.split_visit_groups(
+            other_slit_files,
+            join=[0, 1, 3, 5],
+            gratings=slit_combine.SPLINE_BAR_GRATINGS,
+        )
+
+        for g in list(other_exposure_groups.keys()):
+            # print(g, len(exposure_groups[g]))
+            if len(other_exposure_groups[g]) == 5:
+                spl = g.split("_")
+                files = [f for f in other_exposure_groups[g]]
+                spl.insert(2, "set1")
+                g1 = "_".join(spl)
+                other_exposure_groups[g1] = files[0::2]
+
+                spl[2] = "set2"
+                g2 = "_".join(spl)
+                other_exposure_groups[g2] = files[1::2]
+
+                _ = other_exposure_groups.pop(g)
 
     if "exposure_groups" not in extract_kwargs:
         extract_kwargs["exposure_groups"] = exposure_groups
@@ -337,7 +399,31 @@ def reduce_fixed_slit_obsid(
         for k in free_sky:
             extract_kwargs[k] = free_sky[k]
 
+    for g in exposure_groups:
+        if len(exposure_groups[g]) == 1:
+            if "diffs" not in extract_kwargs:
+                extract_kwargs["diffs"] = False
+            if "grating_diffs" not in extract_kwargs:
+                extract_kwargs["grating_diffs"] = False
+
+            msg = "group {g} has N=1 exposure, diffs={diffs} grating_diffs={grating_diffs}".format(
+                g=g, **extract_kwargs
+            )
+            grizli.utils.log_comment(grizli.utils.LOGFILE, msg, verbose=True)
+
+            extract_kwargs["make_2d_plots"] = False
+
+            # if len(other_slit_files) > 0:
+            #     sky_arrays = get_sky_from_other_slits(
+            #         other_slit_files, corr_max=5, df=32, minmax=(0.7, 5.4)
+            #     )
+            #     extract_kwargs["sky_arrays"] = sky_arrays
+
     _ = slit_combine.extract_spectra(**extract_kwargs)
+
+    if len(other_slit_files) > 0:
+        extract_kwargs["exposure_groups"] = other_exposure_groups
+        _ = slit_combine.extract_spectra(**extract_kwargs)
 
     all_slit_files = utils.glob_sorted("jw*_s*[12].fits")
     if len(all_slit_files) > 0:
@@ -364,8 +450,6 @@ def cutout_info(files, clean=False):
     """
     import os
     import glob
-
-    import numpy as np
 
     import subprocess
     import astropy.io.fits as pyfits
