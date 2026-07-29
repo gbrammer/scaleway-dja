@@ -54,6 +54,10 @@ write_files:
       conda run -n py312 pip install msaexp --upgrade
       conda run -n py312 python3 -c "import msaexp; print('msaexp: ', msaexp.__version__)" >> /root/runcmd_log.txt
 
+      # Upgrade grizli
+      conda run -n py312 pip install git+https://github.com/gbrammer/grizli.git --upgrade
+      conda run -n py312 python3 -c "import grizli; print('grizli: ', grizli.__version__)" >> /root/runcmd_log.txt
+
       # # install imagemagick for ifu-anim
       # apt-get install imagemagick -y
 
@@ -73,18 +77,37 @@ write_files:
         max_locks=`scw-userdata max_process_locks`
         app_types=`scw-userdata app_process_types | sed "s/_/ /g"`
 
+        cleanup() {
+          echo "Cleaning up..."
+          jobs -p | xargs -r kill
+        }
+
+        trap cleanup SIGINT SIGTERM EXIT
+
         for app in ${app_types}; do
             count_lockfiles=`ls *lock | wc -l`
 
             if [[ $count_lockfiles -lt $max_locks ]]; then
                 msg="Found ${count_lockfiles} lock files >> run app.py --${app}"
+
                 echo `date` ${msg} >> /GrizliImaging/cron.log.txt
-                conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --${app}
+                nproc=`expr ${max_locks} - ${count_lockfiles}`
+
+                if [ ${app} == "tiles" ]; then
+                    # Run one query first
+                    conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --tiles --count 0
+                fi
+
+                echo "    Run N=${nproc} --${app} processes" >> /GrizliImaging/cron.log.txt
+
+                # run jobs
+                seq ${nproc} | xargs -n 1 -P ${nproc} conda run -n py312 python3 /root/scaleway-dja/processor-instance/app/app.py --${app} >> /tmp/${app}.stdout.txt
+
             else
                 echo "Found ${count_lockfiles} lock files" >> /GrizliImaging/cron.log.txt
             fi
         done
-        
+
     permissions: '0755'
 
 # Runs on boot
