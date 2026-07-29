@@ -26,7 +26,7 @@ from grizli.aws.tile_mosaic import (
 from grizli.aws import db
 from grizli import utils, jwst_utils
 
-grizli.jwst_utils.set_quiet_logging()
+jwst_utils.set_quiet_logging()
 
 if os.path.exists("/GrizliImaging/"):
     PATH = "/GrizliImaging/Tiles"
