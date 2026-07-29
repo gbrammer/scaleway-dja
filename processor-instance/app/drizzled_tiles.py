@@ -228,14 +228,13 @@ def run_all_tiles(count=None):
             )
 
 
-if __name__ == "__main__":
-    import sys
+def wrapper(argv):
 
     if not os.path.exists(EVENTS_FILE):
         events = query_tile_events()
 
-    if "--count" in sys.argv:
-        count = int(sys.argv[sys.argv.index("--count") + 1])
+    if "--count" in argv:
+        count = int(argv[argv.index("--count") + 1])
     else:
         count = None
 
@@ -246,3 +245,9 @@ if __name__ == "__main__":
         count = 1
 
     run_all_tiles(count=count)
+
+
+if __name__ == "__main__":
+    import sys
+    wrapper(sys.argv)
+
