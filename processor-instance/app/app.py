@@ -36,6 +36,7 @@ if os.path.exists("/GrizliImaging"):
 else:
     WORKING_DIRECTORY = os.getcwd()
 
+
 def get_hashroot():
     hash_key = secrets.token_urlsafe(16)[:6]
     return hash_key.lower().replace("-", "x")
@@ -45,13 +46,16 @@ THIS_HOST = socket.gethostname()
 if "deployment" in THIS_HOST:
     THIS_HOST = "deployment-" + THIS_HOST.split("-")[-1]
 
-THIS_HASH = f"[{get_hashroot()} {THIS_HOST}]".replace(
+THIS_HASH = get_hashroot()
+
+HASH_HOST = f"[{THIS_HASH} {THIS_HOST}]".replace(
     "Gabriels-MacBook-Pro.local", "macbook-pro.local"
 )
 
 DEFAULT_PORT = "8080"
 
 import matplotlib.pyplot as plt
+
 style_file = "default.mplstyle"
 for path_ in [".", "/root/scaleway-dja/processor-instance/app"]:
     if os.path.exists(os.path.join(path_, style_file)):
@@ -64,7 +68,7 @@ try:
     handler_kwargs = dict(
         url=f"{os.getenv('COCKPIT_LOG_URL')}/loki/api/v1/push",
         tags={"job": "logs_from_python"},
-        auth=(os.getenv('COCKPIT_API_KEY'), os.getenv('COCKPIT_LOG_TOKEN')),
+        auth=(os.getenv("COCKPIT_API_KEY"), os.getenv("COCKPIT_LOG_TOKEN")),
         # auth=(os.getenv("COCKPIT_LOG_TOKEN")),
         version="1",
     )
@@ -88,7 +92,7 @@ try:
         raise ValueError
 
     log_formatter = logging.Formatter(
-        THIS_HASH + " - %(name)s - %(levelname)s -  %(message)s"
+        HASH_HOST + " - %(name)s - %(levelname)s -  %(message)s"
     )
 
     handler = logging_loki.LokiHandler(**handler_kwargs)
@@ -112,7 +116,7 @@ except:
 
 app.logger.setLevel(logging.DEBUG)
 app.logger.debug(f"has_loki_logger: {has_loki_logger}")
-app.logger.debug(f"log hash: {THIS_HASH}")
+app.logger.debug(f"log hash: {HASH_HOST}")
 
 if has_loki_logger:
     app.logger.addHandler(handler)
@@ -221,6 +225,18 @@ def another_function(**json_data):
     app.logger.info(f"another_function: {json.dumps(json_data)}")
 
 
+def run_all_tiles(argv=sys.argv):
+
+    import drizzled_tiles
+
+    lockfile = os.path.join(WORKING_DIRECTORY, f"tiles_{THIS_HASH}.lock")
+
+    with open(lockfile, "w") as fp:
+        fp.write(time.ctime() + "\n")
+
+    drizzled_tiles.wrapper(argv, suffix=f"_{THIS_HASH}")
+
+
 def run_one_fs(**json_data):
     """
     Run a FS object
@@ -257,10 +273,7 @@ def run_one_ifu(**json_data):
         app.logger.error(f"run_one_preprocess_ifu: 'rowid' not specified")
         return False
 
-    lockfile = os.path.join(
-        WORKING_DIRECTORY,
-        "ifu_{rowid}.lock".format(**json_data)
-    )
+    lockfile = os.path.join(WORKING_DIRECTORY, "ifu_{rowid}.lock".format(**json_data))
 
     if os.path.exists(lockfile) & ("force" not in json_data):
         app.logger.critical(f"run_one_preprocess_ifu: {lockfile} found")
@@ -336,8 +349,7 @@ def run_one_msa(**json_data):
         return False
 
     lockfile = os.path.join(
-        WORKING_DIRECTORY,
-        "msa_" + json_data["file"].replace("rate.fits", "rate.lock")
+        WORKING_DIRECTORY, "msa_" + json_data["file"].replace("rate.fits", "rate.lock")
     )
 
     if os.path.exists(lockfile) & ("force" not in json_data):
@@ -364,7 +376,7 @@ def run_one_assoc(**json_data):
     """
 
     # Match AWS EC2
-    os.environ['CRDS_CONTEXT'] = "jwst_1293.pmap"
+    os.environ["CRDS_CONTEXT"] = "jwst_1293.pmap"
 
     # Catch flats updated 2025-02-18
     # os.environ['CRDS_CONTEXT'] = "jwst_1401.pmap"
@@ -418,7 +430,11 @@ if __name__ == "__main__":
 
     json_data = {"message": "local_test"}
 
-    if "--nosleep" not in sys.argv:
+    DO_SLEEP = "--nosleep" not in sys.argv
+
+    DO_SLEEP &= "--tiles" not in sys.argv
+
+    if DO_SLEEP:
         _ = initialize_with_sleep(tmax=16)
 
     #####
@@ -435,9 +451,7 @@ if __name__ == "__main__":
                 "select rowid from nirspec_ifu_exposures where status = 0 ORDER BY RANDOM()"
             )
 
-            finished_file = os.path.join(
-                WORKING_DIRECTORY, "ifu_finished.txt"
-            )
+            finished_file = os.path.join(WORKING_DIRECTORY, "ifu_finished.txt")
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
@@ -465,9 +479,7 @@ if __name__ == "__main__":
                 "select rowid from nirspec_ifu_products where status = 0 ORDER BY RANDOM()"
             )
 
-            finished_file = os.path.join(
-                WORKING_DIRECTORY, "ifu-products_finished.txt"
-            )
+            finished_file = os.path.join(WORKING_DIRECTORY, "ifu-products_finished.txt")
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
@@ -479,11 +491,12 @@ if __name__ == "__main__":
                     os.remove(finished_file)
 
             json_data["rowid"] = int(rows["rowid"][0])
-        
+
         run_one_ifu_product(**json_data)
 
     elif "--ifu-anim" in sys.argv:
         import cube_line_animation
+
         if "--all" in sys.argv:
             result = "start"
             while result is not None:
@@ -494,16 +507,19 @@ if __name__ == "__main__":
 
     elif "--ifu-anim-all" in sys.argv:
         import cube_line_animation
+
         result = "start"
         while result is not None:
             result = cube_line_animation.run_from_args(sys.argv)
 
     elif "--msa-combine" in sys.argv:
         import container
+
         result = container.run_one_combine()
 
     elif "--msa-combine-all" in sys.argv:
         import container
+
         result = "start"
         while result is not None:
             result = container.run_one_combine()
@@ -520,9 +536,7 @@ if __name__ == "__main__":
                 "select rate_file, root from preprocess_nirspec where status = 0 ORDER BY RANDOM()"
             )
 
-            finished_file = os.path.join(
-                WORKING_DIRECTORY, "msa_finished.txt"
-            )
+            finished_file = os.path.join(WORKING_DIRECTORY, "msa_finished.txt")
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
@@ -545,15 +559,15 @@ if __name__ == "__main__":
             json_data["clean"] = False
 
             json_data["row"] = {
-                'obsid': '06133005001',
-                'version': 'v4',
-                'observed_time': 1747998172.303,
-                'release_time': 1779560508.0,
-                'ctime': 1753438612.140117,
-                'status': 70,
-                'query_yaml': 'filter: null\ngrating: null\ntrim_prism_nrs2: true\n',
-                'extract_yaml': '',
-                'rowid': 386
+                "obsid": "06133005001",
+                "version": "v4",
+                "observed_time": 1747998172.303,
+                "release_time": 1779560508.0,
+                "ctime": 1753438612.140117,
+                "status": 70,
+                "query_yaml": "filter: null\ngrating: null\ntrim_prism_nrs2: true\n",
+                "extract_yaml": "",
+                "rowid": 386,
             }
 
         if "row" not in json_data:
@@ -561,9 +575,7 @@ if __name__ == "__main__":
                 "select * from nirspec_fs_helper where status = 0 ORDER BY RANDOM() LIMIT 1"
             )
 
-            finished_file = os.path.join(
-                WORKING_DIRECTORY, "fs_finished.txt"
-            )
+            finished_file = os.path.join(WORKING_DIRECTORY, "fs_finished.txt")
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
@@ -579,6 +591,22 @@ if __name__ == "__main__":
         run_one_fs(**json_data)
 
     #####
+    # Cutout tiles
+    #####
+    elif "--tiles" in sys.argv:
+        if os.path.exists("/GrizliImaging/"):
+            TILES_PATH = "/GrizliImaging/Tiles"
+        else:
+            TILES_PATH = "/tmp/Tiles"
+
+        tiles_finished = os.path.join(TILES_PATH, "finished.txt")
+        if os.path.exists(tiles_finished):
+            print(f"Nothing to do for tiles ({tiles_finished})")
+            sys.exit()
+
+        run_all_tiles(argv=sys.argv)
+
+    #####
     # Imaging association
     #####
     elif "--assoc" in sys.argv:
@@ -590,9 +618,7 @@ if __name__ == "__main__":
                 "select assoc_name from assoc_table where status = 0 ORDER BY RANDOM()"
             )
 
-            finished_file = os.path.join(
-                WORKING_DIRECTORY, "assoc_finished.txt"
-            )
+            finished_file = os.path.join(WORKING_DIRECTORY, "assoc_finished.txt")
             if len(rows) == 0:
                 with open(finished_file, "a") as fp:
                     fp.write(time.ctime() + "\n")
@@ -615,6 +641,6 @@ if __name__ == "__main__":
         port_env = os.getenv("PORT", DEFAULT_PORT)
         port = int(port_env)
         app.run(debug=True, host="0.0.0.0", port=port)
-    
+
     else:
         print("Couldn't find anything to do for {sys.argv}")
