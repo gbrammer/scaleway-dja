@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import tqdm
+import logging
 
 import mastquery
 
@@ -23,7 +24,9 @@ from grizli.aws.tile_mosaic import (
 )
 
 from grizli.aws import db
-from grizli import utils
+from grizli import utils, jwst_utils
+
+grizli.jwst_utils.set_quiet_logging()
 
 if os.path.exists("/GrizliImaging/"):
     PATH = "/GrizliImaging/Tiles"
