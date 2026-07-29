@@ -173,7 +173,9 @@ def run_one_fixed_slit(row=None, clean=True, **kwargs):
             os.remove(file)
 
 
-def get_sky_from_other_slits(files, corr_max=5, df=32, minmax=(0.7, 5.4), **kwargs):
+def get_sky_from_other_slits(
+    files, corr_max=25, df=32, minmax=(0.6, 5.4), sn_clip=[-4, 100], **kwargs
+):
     """ """
     import jwst.datamodels
 
@@ -187,6 +189,10 @@ def get_sky_from_other_slits(files, corr_max=5, df=32, minmax=(0.7, 5.4), **kwar
             valid = (dm.dq & 1) == 0
 
             cal_ = utils.slit_extended_flux_calibration(dm, **kwargs)
+
+            if 0:
+                flat_profile = utils.fixed_slit_flat_field(dm, apply=True, verbose=True)
+
             valid &= dm.phot_corr > 0
             valid &= dm.phot_corr < dm.phot_corr[valid].min() * corr_max
             valid &= np.isfinite((dm.data + dm.err) * dm.phot_corr)
@@ -195,7 +201,7 @@ def get_sky_from_other_slits(files, corr_max=5, df=32, minmax=(0.7, 5.4), **kwar
 
             sn = dm.data / dm.err
             med_sn = np.nanmedian(sn[valid])
-            valid &= (sn > -4) & (sn < 7 * med_sn)
+            valid &= (sn > sn_clip[0]) & (sn < sn_clip[1] * med_sn)
 
             raw_wave.append(dm.wavelength[valid])
             raw_data.append((dm.data * dm.phot_corr)[valid])
@@ -217,7 +223,7 @@ def get_sky_from_other_slits(files, corr_max=5, df=32, minmax=(0.7, 5.4), **kwar
     sky_mask = mwave > 0
     sky_mask[np.interp(raw_wave, mwave, np.arange(1024)).astype(int)] = False
 
-    return mwave, np.nan**sky_mask * sky_model
+    return mwave, np.nan**sky_mask * sky_model * 0.5
 
 
 def reduce_fixed_slit_obsid(
@@ -225,6 +231,8 @@ def reduce_fixed_slit_obsid(
     version="v4",
     query_kwargs=QUERY_KWARGS,
     extract_kwargs={},
+    sky_kwargs=dict(corr_max=25, df=32, minmax=(0.6, 5.4), sn_clip=[-4, 100]),
+    global_sky=False,
     **kwargs,
 ):
     """
@@ -399,6 +407,11 @@ def reduce_fixed_slit_obsid(
         for k in free_sky:
             extract_kwargs[k] = free_sky[k]
 
+    if len(other_slit_files) > 0:
+        sky_arrays = get_sky_from_other_slits(other_slit_files, **sky_kwargs)
+        if global_sky:
+            extract_kwargs["sky_arrays"] = sky_arrays
+
     for g in exposure_groups:
         if len(exposure_groups[g]) == 1:
             if "diffs" not in extract_kwargs:
@@ -413,17 +426,23 @@ def reduce_fixed_slit_obsid(
 
             extract_kwargs["make_2d_plots"] = False
 
-            # if len(other_slit_files) > 0:
-            #     sky_arrays = get_sky_from_other_slits(
-            #         other_slit_files, corr_max=5, df=32, minmax=(0.7, 5.4)
-            #     )
-            #     extract_kwargs["sky_arrays"] = sky_arrays
+            if (len(other_slit_files) > 0) & (0):
+                extract_kwargs["sky_arrays"] = sky_arrays
+
+    if "drizzle_kws" not in extract_kwargs:
+        extract_kwargs["drizzle_kws"] = {
+            "step": 1,
+            "with_pathloss": True,
+            "wave_sample": 1.05,
+            "ny": 30,
+            "dkws": {"oversample": 16, "pixfrac": 0.8},
+        }
 
     _ = slit_combine.extract_spectra(**extract_kwargs)
 
-    if len(other_slit_files) > 0:
-        extract_kwargs["exposure_groups"] = other_exposure_groups
-        _ = slit_combine.extract_spectra(**extract_kwargs)
+    # if len(other_slit_files) > 0:
+    #     extract_kwargs["exposure_groups"] = other_exposure_groups
+    #     _ = slit_combine.extract_spectra(**extract_kwargs)
 
     all_slit_files = utils.glob_sorted("jw*_s*[12].fits")
     if len(all_slit_files) > 0:
@@ -528,6 +547,55 @@ def cutout_info(files, clean=False):
             os.remove(file)
 
     return utils.GTable(cutout_info)
+
+
+def exposure_slit_footprints(file, make_region_file=True):
+    """ """
+    import pysiaf
+    from pysiaf.utils import rotations
+
+    import astropy.io.fits as pyfits
+
+    import grizli.utils
+
+    with pyfits.open(file) as im:
+        h0 = im[0].header
+        h1 = im[1].header
+
+    nrs = pysiaf.Siaf("NIRSpec")
+
+    ap = nrs[h0["APERNAME"]]
+
+    att = rotations.attitude(
+        ap.V2Ref, ap.V3Ref, h1["RA_REF"], h1["DEC_REF"], h1["ROLL_REF"]
+    )
+
+    slits = """
+    NRS_S200A1_SLIT
+    NRS_S200A2_SLIT
+    NRS_S400A1_SLIT
+    NRS_S1600A1_SLIT
+    NRS_S200B1_SLIT
+    """.strip().split(
+        "\n"
+    )
+
+    regions = []
+
+    for slit in slits:
+        ap = nrs[slit.strip()]
+        ap.set_attitude_matrix(att)
+        sr = grizli.utils.SRegion(np.array(ap.corners("sky")))
+        sr.label = slit.strip()
+        regions.append(sr)
+
+    if make_region_file:
+        with open(file.replace(".fits", ".reg"), "w") as fp:
+            fp.write("icrs\n")
+            for reg in regions:
+                fp.write(reg.region[0] + "\n")
+
+    return regions
 
 
 if __name__ == "__main__":
