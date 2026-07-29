@@ -601,7 +601,7 @@ if __name__ == "__main__":
 
         tiles_finished = os.path.join(TILES_PATH, "finished.txt")
         if os.path.exists(tiles_finished):
-            print(f"Nothing to do for tiles ({tiles_finished})")
+            print(f"Nothing to do for tiles - {tiles_finished}")
             sys.exit()
 
         run_all_tiles(argv=sys.argv)

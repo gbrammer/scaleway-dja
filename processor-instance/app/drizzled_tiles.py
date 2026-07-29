@@ -219,12 +219,15 @@ def run_all_tiles(count=None):
             output[k] = default_kwargs[k]
 
         files = glob.glob(lock_file.split(".lock")[0] + "_*")
+        files.sort()
 
         with open(lock_file, "a") as fp:
             for file in files:
                 if clean_result:
                     os.remove(file)
-                    utils.log_comment(TILE_LOGFILE, f"    rm {file}", verbose=True)
+                    utils.log_comment(
+                        TILE_LOGFILE, f"    rm {file}", verbose=True
+                    )
 
                 fp.write(f"{file}\n")
 
