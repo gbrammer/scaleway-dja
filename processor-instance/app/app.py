@@ -228,12 +228,6 @@ def another_function(**json_data):
 def run_all_tiles(argv=sys.argv):
 
     import drizzled_tiles
-
-    lockfile = os.path.join(WORKING_DIRECTORY, f"tiles_{THIS_HASH}.lock")
-
-    with open(lockfile, "w") as fp:
-        fp.write(time.ctime() + "\n")
-
     drizzled_tiles.wrapper(argv, suffix=f"_{THIS_HASH}")
 
 
@@ -604,7 +598,15 @@ if __name__ == "__main__":
             print(f"Nothing to do for tiles - {tiles_finished}")
             sys.exit()
 
+
+        lockfile = os.path.join(WORKING_DIRECTORY, f"tiles_{THIS_HASH}.lock")
+
+        with open(lockfile, "w") as fp:
+            fp.write(time.ctime() + "\n")
+
         run_all_tiles(argv=sys.argv)
+
+        os.remove(lockfile)
 
     #####
     # Imaging association
