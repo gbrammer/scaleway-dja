@@ -80,7 +80,7 @@ def query_tile_events(max_count=200):
     events = []
 
     with open(EVENTS_FILE,'w') as fp:
-        for i in tqdm(range(len(tiles))):
+        for i in tqdm.tqdm(range(len(tiles))):
             i+=1 
 
             if tiles['filter'][i] in ['xF2100W']:
