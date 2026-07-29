@@ -292,7 +292,7 @@ def run_all_tiles(count=None):
     return events
 
 
-def wrapper(argv, suffix=""):
+def wrapper(argv, suffix="", remove_events=True):
 
     global TILE_LOGFILE
 
@@ -308,12 +308,18 @@ def wrapper(argv, suffix=""):
 
     utils.log_comment(TILE_LOGFILE, f"xxx count: {count}", verbose=True)
 
+    if count == 0:
+        return True
+
     if (PATH == "/tmp/Tiles") & (count is None):
         utils.log_comment(TILE_LOGFILE, "!!! local: count=1", verbose=True)
         count = 1
 
     run_all_tiles(count=count)
-
+    if remove_events:
+        if os.path.exists(EVENTS_FILE):
+            print(f"rm {EVENTS_FILE}")
+            os.remove(EVENTS_FILE)
 
 if __name__ == "__main__":
     import sys
