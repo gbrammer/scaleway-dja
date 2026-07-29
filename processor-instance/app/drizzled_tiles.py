@@ -19,11 +19,16 @@ from grizli.aws.tile_mosaic import (drizzle_tile_subregion, reset_locked,
 from grizli.aws import db
 from grizli import utils
 
-PATH = '/GrizliImaging/Tiles'
+if os.path.exists("/GrizliImaging/"):
+    PATH = '/GrizliImaging/Tiles'
+else:
+    PATH = "/tmp/Tiles"
+
 if not os.path.exists(PATH):
     os.makedirs(PATH)
 
 EVENTS_FILE = os.path.join(PATH, 'events.yaml')
+print(f"Events: {EVENTS_FILE}")
 
 def query_tile_events(max_count=200):
     nlock, tlock = count_locked()
@@ -81,7 +86,7 @@ def query_tile_events(max_count=200):
 
     with open(EVENTS_FILE,'w') as fp:
         for i in tqdm.tqdm(range(len(tiles))):
-            i+=1 
+            # i+=1 
 
             if tiles['filter'][i] in ['xF2100W']:
                 continue
@@ -101,7 +106,7 @@ def query_tile_events(max_count=200):
 
     return events
 
-def run_all_tiles():
+def run_all_tiles(count=None):
     #############
 
     # This cell can be copied and run in an ipython terminal on EC2
@@ -195,6 +200,11 @@ def run_all_tiles():
     # Randomize event list so multiple sessions will run in a different order
     so = np.argsort(np.random.normal(size=len(events)))
 
+    if count is not None:
+        so = so[:count]
+
+    print(f"\nRun N={len(so)} tiles....\n")
+
     # Handle pasting individual events into terminal session
     break_threshold = 2000
     # break at the first event with more than break_threshold if 1 else continue
@@ -219,8 +229,20 @@ def run_all_tiles():
 
 
 if __name__ == "__main__":
-    
+    import sys
+
     if not os.path.exists(EVENTS_FILE):
         events = query_tile_events()
 
-    run_all_tiles()
+    if "--count" in sys.argv:
+        count = int(sys.argv[sys.argv.index("--count") + 1])
+    else:
+        count = None
+
+    print(f"xxx count: {count}")
+
+    if (PATH == "/tmp/Tiles") & (count is None):
+        print("!!! local: count=1")
+        count = 1
+
+    run_all_tiles(count=count)
