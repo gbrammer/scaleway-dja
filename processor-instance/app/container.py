@@ -256,6 +256,8 @@ def handle(raw_event, context):
         for k in ["ctime"]:
             args[k] = float(args[k])
 
+        args["unique_path"] = True
+
         app.logger.info(f"handle_spectrum_extraction(**{args})")
 
         try:
