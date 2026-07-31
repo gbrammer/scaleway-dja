@@ -51,7 +51,9 @@ write_files:
       patch /etc/miniconda/envs/py312/lib/python3.12/site-packages/jwst/extract_2d/nirspec.py /root/nirspec_2d.patch
 
       # Upgrade msaexp
-      conda run -n py312 pip install msaexp --upgrade
+      ## conda run -n py312 pip install msaexp --upgrade
+      conda run -n py312 pip install git+https://github.com/gbrammer/msaexp.git --upgrade
+
       conda run -n py312 python3 -c "import msaexp; print('msaexp: ', msaexp.__version__)" >> /root/runcmd_log.txt
 
       # Upgrade grizli
@@ -115,10 +117,12 @@ bootcmd:
     - date >> /root/bootcmd_log.txt
     - ls /root/ >> /root/bootcmd_log.txt
     # - [ bash, "/root/boot-conda-environment.sh"]
-    
+    - echo `date` ": bootcmd done" >> /root/runcmd_log.txt
+
 # Runs later in the process but just the first time
 runcmd:
     - date >> /root/runcmd_log.txt
     - ls /root/ >> /root/runcmd_log.txt
     - [ bash, "/run/run-conda-environment.sh"]
     - (crontab -l 2>/dev/null || echo ""; echo "* * * * * /root/run-processor-cron.sh") | crontab -
+    - echo `date` ": runcmd done" >> /root/runcmd_log.txt
