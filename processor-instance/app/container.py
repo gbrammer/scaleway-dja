@@ -21,6 +21,7 @@ from flask import Flask, request
 import json
 import numpy as np
 
+
 class NpEncoder(json.JSONEncoder):
     """
     Safe encoder for numpy outputs
@@ -34,6 +35,7 @@ class NpEncoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NpEncoder, self).default(obj)
+
 
 def get_hashroot():
     hash_key = secrets.token_urlsafe(16)[:6]
@@ -162,7 +164,7 @@ def tile_handler(event, context, skip_existing=False):
         "numpy": np.__version__,
         "scipy": scipy.__version__,
         "grizli": grizli.__version__,
-        #'tile':tile, 'subx':subx, 'suby':suby, 'filter':filter}
+        # 'tile':tile, 'subx':subx, 'suby':suby, 'filter':filter}
     }
 
     for k in default_kwargs:
@@ -274,6 +276,14 @@ def handle(raw_event, context):
             app.logger.error(exc_report)
             result["result"] = exc_report
 
+            SQL = f"""
+        UPDATE nirspec_extractions_helper
+        SET status = 9, ctime = {time.time()}
+        WHERE rowid = {args["rowid"]} AND key = '{args['key']}'
+            """
+            # print(SQL)
+            db.execute(SQL)
+
     elif event["runmode"] == "tile":
 
         app.logger.info(f"tile_handler(**{event})")
@@ -306,13 +316,11 @@ def test_handler_tile():
 
 def run_one_combine():
 
-    event = db.SQL(
-        f"""
+    event = db.SQL("""
     SELECT root, key FROM nirspec_extractions_helper
     WHERE status = 0 ORDER BY RANDOM() LIMIT 1
-    """
-    )
-    
+    """)
+
     if len(event) == 0:
         return None
 
@@ -343,9 +351,9 @@ def test_handler_combine(event=None):
 
     if event is None:
         event = {
-        "runmode": "msa-combine",
-        "root": "gds-barrufet-s156-v4",
-        "key": "2198_2735",
+            "runmode": "msa-combine",
+            "root": "gds-barrufet-s156-v4",
+            "key": "2198_2735",
         }
 
     result = handle(event, {})
