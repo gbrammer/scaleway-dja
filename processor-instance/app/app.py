@@ -516,6 +516,7 @@ if __name__ == "__main__":
 
         result = "start"
         while result is not None:
+            os.chdir(WORKING_DIRECTORY)
             result = container.run_one_combine()
 
     #####
