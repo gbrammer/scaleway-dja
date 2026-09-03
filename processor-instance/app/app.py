@@ -26,7 +26,7 @@ try:
 except ImportError:
     visit_processor = None
 
-import run_one_fixed_slit
+import fixed_slit
 
 import logging_loki
 from flask import Flask, request
@@ -245,7 +245,7 @@ def run_one_fs(**json_data):
     with open(lockfile, "w") as fp:
         fp.write(time.ctime() + "\n")
 
-    run_one_fixed_slit.run_one_fixed_slit(**json_data)
+    fixed_slit.run_one_fixed_slit(**json_data)
     os.remove(lockfile)
 
 
@@ -583,6 +583,9 @@ if __name__ == "__main__":
 
             json_data["row"] = dict(rows[0])
 
+        if "--noclean" in sys.argv:
+            json_data["clean"] = False
+
         run_one_fs(**json_data)
 
     #####
@@ -606,6 +609,24 @@ if __name__ == "__main__":
             fp.write(time.ctime() + "\n")
 
         run_all_tiles(argv=sys.argv)
+
+        os.remove(lockfile)
+
+    #####
+    # Mosaic subtiles
+    #####
+    elif "--subtile" in sys.argv:
+        from grizli.aws.visit_mosaic import run_one_subtile
+
+        lockfile = os.path.join(WORKING_DIRECTORY, f"subtile_{THIS_HASH}.lock")
+
+        with open(lockfile, "w") as fp:
+            fp.write(time.ctime() + "\n")
+
+        if "--fixed" in sys.argv:
+            result = run_one_subtile(row="test")
+        else:
+            result = run_one_subtile(row=None)
 
         os.remove(lockfile)
 
