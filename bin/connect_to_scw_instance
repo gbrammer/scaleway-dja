@@ -5,41 +5,80 @@
 # Usage:
 #
 #   # list instance names
-#   connect_to_scw_instance list
+#   connect_to_scw_instance --list
 #
 #   # Connect to a particular instance by name
 #   connect_to_scw_instance worker00
 #
 #   # Map jupyter port=8888 on remote instance to a local port
-#   connect_to_scw_instance worker00 8889
+#   connect_to_scw_instance worker00 --port=8889
+
+zones=fr-par-1,fr-par-2,fr-par-3
+do_list=0
+
+notebook_port=""
 
 if [ $# -eq 0 ]; then
-    name="worker00"
-else
-    name=$1
+    do_list=1
 fi
+
+for arg in $@; do
+    if [ $arg == "--list" ]; then
+        do_list=1
+    elif [[ $arg =~ "--port" ]]; then
+        notebook_port=`echo $arg | sed "s/=/ /" | awk '{print $2}'`
+    elif [[ $arg =~ "--zone" ]]; then
+        zones=`echo $arg | sed "s/=/ /" | awk '{print $2}'`
+    else
+        name=$arg
+    fi
+done
+
+# echo "debug: zones=${zones} notebook_port=${notebook_port} name=${name} do_list=${do_list}"
 
 # echo "Count: $#, Instance: $i, $i0"
 
-if [ $name == "list" ]; then
-    scw instance server list
+if [ $do_list -eq 1 ]; then
+    for zone in `echo $zones | sed "s/,/ /g"`; do
+        scw instance server list zone=${zone} > /tmp/scw_servers_${zone}.txt
+        nlines=$((`wc -l /tmp/scw_servers_${zone}.txt | awk '{print $1}'`-1))
+        echo "zone=${zone}  N=${nlines}"
+        if [ $nlines -gt 0 ]; then
+            echo ""
+            # cat /tmp/scw_servers_${zone}.txt
+            scw instance server list zone=${zone}
+            echo ""
+        fi
+        
+    done
 else
-    ip=`scw instance server list name=${name} | grep $name | awk '{print $6}'`
-    echo "Connect to instance $name @ $ip"
+    for zone in `echo $zones | sed "s/,/ /g"`; do
+        ip=`scw instance server list name=${name} zone=${zone} | grep $name | awk '{print $6}'`
+        if [ "${ip}" != "" ]; then
+            break
+        fi
+    done
 
-    if [ "$2" == "" ]; then
+    if [ "${ip}" == "" ]; then
+        echo "No instance found with name=${name}, try --list"
+        exit
+    fi
+
+    echo "Connect to instance $name @ $ip (zone=${zone})"
+
+    if [ "$notebook_port" == "" ]; then
         grep -v ${ip} ${HOME}/.ssh/known_hosts > /tmp/known_hosts.x
         mv /tmp/known_hosts.x ${HOME}/.ssh/known_hosts
 
         ssh -i ~/.ssh/id_ed25519 root@${ip}
 
     else
-        echo "Notebook port: $2"
+        echo "Notebook port: ${notebook_port}"
 
         grep -v ${ip} ${HOME}/.ssh/known_hosts > /tmp/known_hosts.x
         mv /tmp/known_hosts.x ${HOME}/.ssh/known_hosts
 
-        ssh -N -f -L ${2}:localhost:8888 root@${ip}
+        ssh -N -f -L ${notebook_port}:localhost:8888 root@${ip}
         echo "open \"https://localhost:${2}\""
 
     fi

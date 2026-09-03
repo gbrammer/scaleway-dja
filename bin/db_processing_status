@@ -4,7 +4,7 @@
 
 suppress="--suppress-common-lines"
 update=0
-do_diff=1
+do_diff=0
 args=""
 
 for var in "$@"; do
@@ -14,6 +14,8 @@ for var in "$@"; do
         suppress=""
     elif [ $var == "--nodiff" ]; then
         do_diff=0
+    elif [ $var == "--diff" ]; then
+        do_diff=1
     elif [ $var == "--update" ]; then
         update=1
     elif [ $var == "--help" ]; then
@@ -40,6 +42,31 @@ if [ $do_diff -eq 1 ]; then
     fi
 else
     cat /tmp/${mode}_this.txt
+    
+    if [ -e "/tmp/${mode}_prev.txt" ]; then
+        this_row=`grep -n "===" /tmp/${mode}_this.txt | tail -1  | sed "s/:/ "/ | awk '{print $1}'`
+        this_count=`wc /tmp/${mode}_this.txt | awk '{print $1}'`
+
+        prev_row=`grep -n "===" /tmp/${mode}_prev.txt | tail -1  | sed "s/:/ "/ | awk '{print $1}'`
+        prev_count=`wc /tmp/${mode}_prev.txt | awk '{print $1}'`
+
+        tail -$(($prev_count - $prev_row)) /tmp/${mode}_prev.txt > /tmp/${mode}_prev_last.txt
+        tail -$(($this_count - $this_row)) /tmp/${mode}_this.txt > /tmp/${mode}_this_last.txt
+        
+        spacer=`python -c "print('~'*83)"`
+
+        diff -y -W 200 /tmp/${mode}_this_last.txt /tmp/${mode}_prev_last.txt > /tmp/${mode}_diff_last.txt
+
+        if [ -s "${mode}_diff_last.txt" ]; then
+            echo "${spacer}  now   -   prev ${spacer}"
+            cat ${mode}_diff_last.txt
+        fi
+
+        rm /tmp/${mode}*last.txt
+
+    else
+        cp /tmp/${mode}_this.txt /tmp/${mode}_prev.txt
+    fi
 fi
 
 if [ $update -eq 1 ]; then

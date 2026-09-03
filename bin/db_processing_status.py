@@ -38,6 +38,11 @@ for i, arg in enumerate(sys.argv):
 
 dtu = dt * 86400
 
+if "--public" in sys.argv:
+    ctime_public = now.unix
+else:
+    ctime_public = now.unix + 800 * 86400.
+
 def print_header(txt, newline="\n"):
     print(newline + f"{'='*24}{txt:^26}{'='*24}\n")
 
@@ -184,7 +189,7 @@ if "msa" in queries:
     from preprocess_nirspec
     where (status in (0,1) OR ctime > {now.unix - dtu}) """
     f"AND (ctime < {now.unix + dt} OR ctime is NULL)"
-    """group by root, status, grating, filter, substr(rate_file, 3, 5), split_part(rate_file, '_', 4) order by substr(rate_file, 3, 5), root, grating, filter, split_part(rate_file, '_', 4), status limit 10
+    """group by root, status, grating, filter, substr(rate_file, 3, 5), split_part(rate_file, '_', 4) order by substr(rate_file, 3, 5), root, grating, filter, split_part(rate_file, '_', 4), status
     """)
     status['proposal_id'] = status['proposal_id'].astype(int)
 
@@ -192,6 +197,25 @@ if "msa" in queries:
         pprint(status)
         # status_column(status)
         # status.pprint(align=['^','>','>','>'])
+
+if "fs" in queries:
+    # MSA
+    print_header("Nirspec Fixed-Slit")
+    print_header(" - nirspec_fs_helper - ", "")
+
+    status = db.SQL(f"""
+    SELECT substr(obsid,1, 5) as proposal_id, (max(release_time) < {now.unix}) as pub, status, count(*) --, max(ctime - {now.unix}) as ctime
+    from nirspec_fs_helper
+    where (status in (0,1) OR ctime > {now.unix - dtu}) """
+    f"AND ((ctime < {now.unix + dt} OR ctime is NULL) AND release_time < {ctime_public})"
+    """GROUP BY substr(obsid, 1, 5), status
+    order by substr(obsid, 1, 5), status
+    """)
+    status['pub'] = ['+' if p else ' ' for p in status["pub"]]
+    status['proposal_id'] = status['proposal_id'].astype(int)
+
+    if len(status) > 0:
+        pprint(status)
 
 if "ifu" in queries:
     # IFU
@@ -231,7 +255,7 @@ if "msa-combine" in queries:
     status = db.SQL(f"""
     SELECT root, status, count(status)
     from nirspec_extractions_helper
-    where status in (110,111) OR (ctime > {now.unix - dtu} AND ctime < {now.unix + dt})
+    where status in (110,111,0) OR (ctime > {now.unix - dtu} AND ctime < {now.unix + dt})
     GROUP BY root, status order by root, status
     """)
 
